@@ -210,6 +210,8 @@ const ITEMS = [
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
+// アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
+const APP_VERSION = '2026-10-10c';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -283,7 +285,16 @@ async function getJSON(url, ms) {
     return await r.json();
   } finally { clearTimeout(timer); }
 }
+// GitHub Pages は古いページを最大10分使い回すので、新しい版が出ていたら別アドレスで開き直す
+async function checkUpdate() {
+  try {
+    const txt = await (await fetch('./index.html?t=' + Date.now(), { cache: 'no-store' })).text();
+    const m = txt.match(/const APP_VERSION = '([^']+)'/);
+    if (m && m[1] !== APP_VERSION) location.replace(location.pathname + '?v=' + encodeURIComponent(m[1]));
+  } catch {}
+}
 async function refresh() {
+  checkUpdate();
   let got = null, src = '';
   try { got = normalize(await getJSON(QT_URL, 6000)); src = 'Queue-Times 直接'; } catch {}
   if (!got || !Object.keys(got.rides).length) {
@@ -461,7 +472,7 @@ function render() {
     $('fresh').className = ago >= 20 ? 'old' : '';
   } else { $('fresh').textContent = '自動更新：データなし'; $('fresh').className = 'old'; }
   $('trial').textContent = c.trial ? 'お試し表示（「済」などは本番に残りません）' : '';
-  $('src').textContent = W.source ? `データ：${W.source}` : '';
+  $('src').textContent = `${W.source ? `データ：${W.source}・` : ''}版 ${APP_VERSION}`;
 
   // 時間指定を15分過ぎても「済」でないもの
   const overdue = c.now >= c.end ? [] : env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && c.now > fixedTime(i) + 15);
