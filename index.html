@@ -37,26 +37,35 @@ button { font: inherit; color: inherit; cursor: pointer; }
 a { color: var(--accent); }
 
 /* 1. 上の小さい表示 */
-#top { font-size: 15px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
-#top b { color: var(--fg); font-size: 17px; }
-#fresh.old { color: var(--warn); font-weight: 700; }
-#trial { width: 100%; background: var(--hl); color: var(--hl-fg); border-radius: 8px; padding: 4px 10px; margin-top: 6px; font-size: 14px; font-weight: 600; }
+#top { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between; }
+#clock b { font-size: 20px; font-weight: 800; }
+#clock small { font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 4px; }
+#fresh { font-size: 14px; font-weight: 700; color: var(--muted); border: 1.5px solid var(--line); border-radius: 999px; padding: 1px 10px; }
+#fresh.old { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+#trial { width: 100%; background: var(--hl); color: var(--hl-fg); border-radius: 8px; padding: 3px 10px; font-size: 14px; font-weight: 700; }
 #trial:empty { display: none; }
 
 /* 2. 次はここ */
 .card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 16px; margin-top: 12px; }
-#next .label { font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: .05em; }
-#next .name { font-size: 30px; font-weight: 800; line-height: 1.25; margin: 4px 0 8px; word-break: break-word; }
-#next .facts { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 20px; font-weight: 700; }
-#next .facts span small { font-size: 15px; font-weight: 600; color: var(--muted); }
-#next .reason { margin-top: 8px; font-size: 17px; }
-#next .rank { margin-right: 6px; }
-#next .pcts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-#next .pcts span { border: 2px solid var(--accent); border-radius: 999px; padding: 2px 12px; font-size: 16px; font-weight: 700; }
-#next .pcts b { font-size: 22px; color: var(--accent); }
-#next .alt { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; }
-#next .alt .an { font-weight: 700; font-size: 18px; }
-#next .alt .am { font-size: 15px; color: var(--muted); }
+#next .label { font-size: 15px; font-weight: 800; color: var(--muted); letter-spacing: .08em; }
+#next .name { font-size: 28px; font-weight: 800; line-height: 1.25; margin: 2px 0 10px; word-break: break-word; }
+#next .rank { color: var(--accent); margin-right: 4px; }
+#next .pcts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+#next .pcts span { border: 2px solid var(--accent); border-radius: 999px; padding: 1px 12px; font-size: 15px; font-weight: 700; }
+#next .pcts b { font-size: 21px; color: var(--accent); }
+#next .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#next .stat { background: var(--bg); border-radius: 12px; padding: 6px 12px; }
+#next .stat small { display: block; font-size: 13px; font-weight: 700; color: var(--muted); }
+#next .stat b { font-size: 26px; font-weight: 800; line-height: 1.2; }
+#next .stat em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+#next .reason { margin-top: 10px; font-size: 17px; line-height: 1.45; }
+#next .alts { margin-top: 14px; border-top: 2px solid var(--line); }
+#next .alt { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+#next .alt:last-child { border-bottom: 0; padding-bottom: 0; }
+#next .alt .ab { flex: 1; min-width: 0; }
+#next .alt .an { font-weight: 700; font-size: 17px; line-height: 1.3; }
+#next .alt .am { font-size: 14px; color: var(--muted); }
+#next .alt .ap { font-size: 20px; font-weight: 800; color: var(--accent); }
 .big { display: block; width: 100%; min-height: 68px; margin-top: 14px; border: 0; border-radius: 16px;
   background: var(--accent); color: var(--accent-fg); font-size: 24px; font-weight: 800; }
 .big:active { transform: scale(.98); }
@@ -72,9 +81,20 @@ a { color: var(--accent); }
 .btn.small { min-height: 44px; font-size: 15px; padding: 4px 10px; }
 
 /* 3. カウントダウン */
-#countdown { margin-top: 12px; font-size: 19px; font-weight: 700; padding: 12px 14px; border-radius: 14px; border: 2px dashed var(--line); }
-#countdown .sub { font-size: 16px; color: var(--muted); font-weight: 600; }
-#countdown.now { border-style: solid; border-color: var(--warn); color: var(--warn); }
+#countdown { margin-top: 10px; padding: 12px 14px; border-radius: 16px; border: 2.5px solid var(--accent); }
+#countdown .cl { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: .08em; }
+#countdown .cn { font-size: 22px; font-weight: 800; line-height: 1.3; }
+#countdown .cr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+#countdown .ct { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.15; }
+#countdown .cleft { font-size: 18px; font-weight: 700; }
+#countdown .cleft b { font-size: 26px; }
+#countdown .cm { font-size: 16px; font-weight: 700; color: var(--muted); }
+#countdown .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; align-items: center; }
+#countdown .chips i { font-style: normal; font-size: 12px; font-weight: 800; color: var(--muted); margin-right: 2px; }
+#countdown .chips span { font-size: 13px; font-weight: 700; border-radius: 6px; padding: 0 6px; background: var(--card); border: 1px solid var(--line); white-space: nowrap; }
+#countdown.now { background: var(--alarm); border-color: var(--alarm); color: var(--alarm-fg); }
+#countdown.now .cl, #countdown.now .cm, #countdown.now .chips i { color: var(--alarm-fg); }
+#countdown.now .chips span { background: transparent; border-color: var(--alarm-fg); }
 #notifyHint { margin-top: 8px; }
 
 /* 折りたたみ */
@@ -131,9 +151,9 @@ footer a { font-weight: 700; }
     <div id="trial"></div>
   </header>
 
+  <section id="countdown"></section>
   <div id="overdue"></div>
   <section id="next" class="card" aria-live="polite"></section>
-  <section id="countdown"></section>
 
   <details id="dList"><summary>待ち時間一覧・手直し</summary><div id="list"></div></details>
   <details id="dSim"><summary>このまま行くと</summary><div id="sim"></div></details>
@@ -170,19 +190,19 @@ const ITEMS = [
   { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
   { id: 'dinner4', name: '夕食（軽め）', days: ['d4'], type: 'meal', after: '17:00', by: '18:30', dur: 30, pri: 3, area: null },
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
-  { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', days: ['d4'], type: 'fixed', time: '18:50', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
+  { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', days: ['d4', 'd5'], type: 'standby', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
   { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'fixed', time: '11:00', dur: 30, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
-  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', days: ['d5'], type: 'fixed', time: '12:30', dur: 20, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', days: ['d5'], type: 'fixed', time: '12:30', dur: 20, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', days: ['d4', 'd5'], type: 'standby', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', dur: 30, qt: 12061, area: 'ニンテンドー' },
-  { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', days: ['d5'], type: 'fixed', time: '16:00', dur: 20, qt: 14402, area: 'ニンテンドー' },
+  { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'photo',   name: '写真・グッズ・USJ土産', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
   { id: 'dinner5', name: '夕食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 40, pri: 3, area: null },
-  { id: 'mi',      name: 'ミッション・インポッシブル', days: ['d5'], type: 'fixed', time: '18:00', dur: 30, area: 'ニューヨーク' },
+  { id: 'mi',      name: 'ミッション・インポッシブル', chip: 'ミッション', days: ['d5'], type: 'fixed', time: '18:00', dur: 30, area: 'ニューヨーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', days: ['d4', 'd5'], type: 'standby', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
@@ -434,14 +454,13 @@ function render() {
   const t = Math.max(c.now, c.start);
 
   // 1. 上の小さい表示
-  $('clock').innerHTML = `<b>${c.day.label} ${fmt(c.now)}</b>${c.now < c.start ? '（入園前）' : ''}`;
+  $('clock').innerHTML = `<b>${c.day.label} ${fmt(c.now)}</b>${c.now < c.start ? '<small>入園前</small>' : ''}`;
   if (W.updatedAt) {
     const ago = Math.max(0, Math.round((Date.now() - W.updatedAt) / 60000));
     $('fresh').textContent = `自動更新：${jstHM(W.updatedAt)}時点（${ago < 1 ? 'たった今' : dur(ago) + '前'}）`;
     $('fresh').className = ago >= 20 ? 'old' : '';
   } else { $('fresh').textContent = '自動更新：データなし'; $('fresh').className = 'old'; }
-  $('trial').textContent = c.trial
-    ? `お試し表示：${c.day.label} ${fmt(c.now)} の状態です（ここで押した「済」などは本番に残りません）` : '';
+  $('trial').textContent = c.trial ? 'お試し表示（「済」などは本番に残りません）' : '';
   $('src').textContent = W.source ? `データ：${W.source}` : '';
 
   // 時間指定を15分過ぎても「済」でないもの
@@ -458,27 +477,30 @@ function render() {
   if (r.kind === 'go') {
     const i = r.item;
     const tag = i.type === 'pass' ? '<span class="tag pass">パス</span>' : i.type === 'standby' ? '' : `<span class="tag">${TYPE_LABEL[i.type]}</span>`;
-    const w = (i.type === 'standby' || i.type === 'pass') ? `<span>待ち ${r.wait}分${r.src !== '自動' ? `<small>（${r.src}）</small>` : ''}</span>` : `<span>${i.dur}分くらい</span>`;
     const isRide = (x) => x.type === 'standby' || x.type === 'pass';
+    const stat1 = isRide(i)
+      ? `<small>待ち${r.src !== '自動' ? `<em>${r.src}</em>` : ''}</small><b>${r.wait}分</b>`
+      : `<small>かかる時間</small><b>${i.dur}分</b>`;
     h = `<div class="label">${lead}</div><div class="name"><span class="rank">①</span>${tag}${esc(i.name)}</div>
       <div class="pcts"><span>おすすめ <b>${r.share}%</b></span><span>間に合う <b>${pct(r.ok)}%</b></span></div>
-      <div class="facts">${w}<span>${fmt(r.finish)}ごろ終わる</span></div>
+      <div class="stats"><div class="stat">${stat1}</div><div class="stat"><small>終わる</small><b>${fmt(r.finish)}</b><em>ごろ</em></div></div>
       <div class="reason">${esc(reasonOf(r, env))}</div>
       <button class="big" data-act="done" data-id="${i.id}">終わった</button>
-      ${r.alts.map((a, n) => `<div class="alt"><div><div class="an">${'②③'[n]} ${esc(a.item.name)}</div>
-        <div class="am">おすすめ${a.share}%・間に合う${pct(a.ok)}%${isRide(a.item) ? `・待ち${a.wait}分` : ''}・${fmt(a.finish)}ごろ終わる</div></div>
-        <button class="btn small" data-act="done" data-id="${a.item.id}">済</button></div>`).join('')}`;
+      ${r.alts.length ? `<div class="alts">${r.alts.map((a, n) => `<div class="alt">
+        <div class="ab"><div class="an">${'②③'[n]} ${esc(a.item.name)}</div>
+        <div class="am">${isRide(a.item) ? `待ち${a.wait}分・` : ''}${fmt(a.finish)}ごろ終わる・間に合う${pct(a.ok)}%</div></div>
+        <div class="ap">${a.share}%</div>
+        <button class="btn small" data-act="done" data-id="${a.item.id}">済</button></div>`).join('')}</div>` : ''}`;
   } else if (r.kind === 'fixed') {
     const late = t > r.time;
     h = `<div class="label">${lead}<span class="tag fixed" style="margin-left:6px">時間指定</span></div>
       <div class="name">${esc(r.item.name)}</div>
       <div class="pcts"><span>${fmt(r.time)}に間に合う <b>${pct(r.ok)}%</b></span></div>
-      <div class="facts"><span>${fmt(r.time)}から</span><span>${fmt(r.finish)}ごろ終わる</span></div>
+      <div class="stats"><div class="stat"><small>開始</small><b>${fmt(r.time)}</b></div><div class="stat"><small>終わる</small><b>${fmt(r.finish)}</b><em>ごろ</em></div></div>
       <div class="reason">${late ? '時刻を過ぎています。急いで！' : t >= r.moveAt ? `今すぐ移動（移動${r.travel}分）` : `${fmt(r.moveAt)}には移動（移動${r.travel}分）`}</div>
       <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
   } else if (r.kind === 'move') {
     h = `<div class="label">${lead}</div><div class="name">${esc(short(r.item))}へ移動</div>
-      <div class="facts"><span>${fmt(r.nf.time)}の時間指定</span></div>
       <div class="reason">今から入れるものはありません。空き時間は休憩・写真に（${fmt(r.nf.time - travel(env.area, r.item.area))}までに出発）</div>`;
   } else if (r.kind === 'wait') {
     h = `<div class="label">${lead}</div><div class="name">${esc(r.item.name)}は${r.item.after}から</div>
@@ -489,20 +511,30 @@ function render() {
   }
   $('next').innerHTML = h;
 
-  // 3. カウントダウン
-  const nextFixed = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedTime(i) + 15 >= c.now)
-    .sort((a, b) => fixedTime(a) - fixedTime(b))[0];
+  // 3. 時間指定のカウントダウン（いちばん上に表示）
+  const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedTime(i) + 15 >= c.now)
+    .sort((a, b) => fixedTime(a) - fixedTime(b));
+  const nextFixed = upcoming[0];
   const cd = $('countdown');
-  if (nextFixed) {
+  const chips = (list) => `<div class="chips"><i>このあと</i>${list.map((i) => `<span>${fmt(fixedTime(i))} ${esc(i.chip || short(i))}</span>`).join('')}<span>${c.day.end} 退園</span></div>`;
+  if (c.now >= c.end) {
+    cd.className = '';
+    cd.innerHTML = `<div class="cl">退園</div><div class="cn">${esc(c.day.endText)}</div>`;
+  } else if (nextFixed) {
     const ft = fixedTime(nextFixed);
-    const moveAt = ft - travel(env.area, nextFixed.area);
+    const tr = travel(env.area, nextFixed.area);
+    const moveAt = ft - tr;
     const isNow = c.now >= moveAt;
     cd.className = isNow ? 'now' : '';
-    cd.innerHTML = `${esc(short(nextFixed))} ${fmt(ft)} まで ${c.now >= ft ? '<span>時刻です</span>' : 'あと' + dur(ft - c.now)}
-      <div class="sub">${isNow ? '今すぐ移動！' : fmt(moveAt) + 'には移動'}</div>`;
+    cd.innerHTML = `<div class="cl">次の時間指定</div><div class="cn">${esc(nextFixed.name)}</div>
+      <div class="cr"><span class="ct">${fmt(ft)}</span><span class="cleft">${c.now >= ft ? '<b>時刻です</b>' : `あと<b>${dur(ft - c.now)}</b>`}</span></div>
+      <div class="cm">${isNow ? `今すぐ移動！（移動${tr}分）` : `${fmt(moveAt)}には移動（移動${tr}分）`}</div>
+      ${chips(upcoming.slice(1))}`;
   } else {
     cd.className = '';
-    cd.innerHTML = c.now < c.end ? `退園 ${c.day.end} まで あと${dur(c.end - c.now)}<div class="sub">${esc(c.day.endText)}</div>` : esc(c.day.endText);
+    cd.innerHTML = `<div class="cl">今日の時間指定は終わり</div>
+      <div class="cr"><span class="ct">${c.day.end}</span><span class="cleft">退園まで あと<b>${dur(c.end - c.now)}</b></span></div>
+      <div class="cm">${esc(c.day.endText)}</div>`;
   }
   if (!notify.on && !c.trial) cd.innerHTML += `<div id="notifyHint"><button class="btn small" data-act="notify">🔔 お知らせをオン</button></div>`;
 
