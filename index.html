@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="USJナビ">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>USJナビ</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #0b0b0b; --muted: #444a52; --card: #f2f4f7; --line: #b9c0ca;
+  --accent: #0040c8; --accent-fg: #ffffff; --warn: #b3001b; --warn-bg: #ffe8ec;
+  --ok: #0a6e2e; --pass: #6a2bbf; --hl: #fff1b8; --hl-fg: #3d2f00;
+  --alarm: #d4000f; --alarm-fg: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --fg: #f6f6f6; --muted: #b9bec6; --card: #15181d; --line: #3b414b;
+    --accent: #5c9dff; --accent-fg: #000000; --warn: #ff6b80; --warn-bg: #3b0d16;
+    --ok: #4bd27b; --pass: #c39bff; --hl: #3b3210; --hl-fg: #ffe38a;
+    --alarm: #ff3344; --alarm-fg: #000000;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+  font-size: 18px; line-height: 1.5;
+}
+.wrap { max-width: 480px; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: var(--accent); }
+
+/* 1. 上の小さい表示 */
+#top { font-size: 15px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+#top b { color: var(--fg); font-size: 17px; }
+#fresh.old { color: var(--warn); font-weight: 700; }
+#trial { width: 100%; background: var(--hl); color: var(--hl-fg); border-radius: 8px; padding: 4px 10px; margin-top: 6px; font-size: 14px; font-weight: 600; }
+#trial:empty { display: none; }
+
+/* 2. 次はここ */
+.card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 16px; margin-top: 12px; }
+#next .label { font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: .05em; }
+#next .name { font-size: 30px; font-weight: 800; line-height: 1.25; margin: 4px 0 8px; word-break: break-word; }
+#next .facts { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 20px; font-weight: 700; }
+#next .facts span small { font-size: 15px; font-weight: 600; color: var(--muted); }
+#next .reason { margin-top: 8px; font-size: 17px; }
+.big { display: block; width: 100%; min-height: 68px; margin-top: 14px; border: 0; border-radius: 16px;
+  background: var(--accent); color: var(--accent-fg); font-size: 24px; font-weight: 800; }
+.big:active { transform: scale(.98); }
+.tag { display: inline-block; font-size: 13px; font-weight: 700; border: 1.5px solid currentColor; border-radius: 6px; padding: 0 6px; margin-right: 4px; vertical-align: 2px; }
+.tag.pass { color: var(--pass); } .tag.fixed { color: var(--warn); } .tag.ok { color: var(--ok); }
+
+/* 時間指定の確認 */
+.ask { background: var(--warn-bg); border: 2px solid var(--warn); border-radius: 14px; padding: 12px; margin-top: 12px; }
+.ask p { margin: 0 0 8px; font-weight: 700; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn { min-height: 48px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); font-weight: 700; padding: 6px 10px; }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.small { min-height: 44px; font-size: 15px; padding: 4px 10px; }
+
+/* 3. カウントダウン */
+#countdown { margin-top: 12px; font-size: 19px; font-weight: 700; padding: 12px 14px; border-radius: 14px; border: 2px dashed var(--line); }
+#countdown .sub { font-size: 16px; color: var(--muted); font-weight: 600; }
+#countdown.now { border-style: solid; border-color: var(--warn); color: var(--warn); }
+#notifyHint { margin-top: 8px; }
+
+/* 折りたたみ */
+details { margin-top: 12px; border: 2px solid var(--line); border-radius: 14px; }
+summary { list-style: none; padding: 14px 16px; font-weight: 700; font-size: 18px; min-height: 52px; display: flex; justify-content: space-between; align-items: center; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "＋"; color: var(--muted); }
+details[open] summary::after { content: "－"; }
+details > div { padding: 0 14px 14px; }
+.item { padding: 10px 0; border-top: 1px solid var(--line); }
+.item:first-child { border-top: 0; }
+.item .n { font-weight: 700; }
+.item .m { font-size: 15px; color: var(--muted); }
+.item .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.item.dim .n { text-decoration: line-through; opacity: .6; }
+.tl { display: grid; grid-template-columns: 7.2em 1fr; gap: 2px 8px; font-size: 16px; }
+.tl .t { font-variant-numeric: tabular-nums; color: var(--muted); }
+.tl .free { color: var(--muted); }
+.hl { background: var(--hl); color: var(--hl-fg); border-radius: 6px; padding: 0 4px; }
+.warnText { color: var(--warn); font-weight: 700; }
+.set { display: grid; gap: 12px; }
+.set label { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.set input, .set select { font: inherit; font-size: 18px; min-height: 44px; padding: 4px 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); }
+.set input[type=number] { width: 5em; }
+.set input[type=checkbox] { width: 28px; height: 28px; min-height: 0; }
+.set h4 { margin: 8px 0 0; font-size: 16px; }
+.note { font-size: 15px; color: var(--muted); }
+ul.rules { padding-left: 1.2em; margin: 0; }
+ul.rules li { margin: 6px 0; }
+
+footer { margin-top: 20px; text-align: center; font-size: 15px; color: var(--muted); }
+footer a { font-weight: 700; }
+
+/* そろそろ移動（画面いっぱい） */
+#alarm { position: fixed; inset: 0; z-index: 10; background: var(--alarm); color: var(--alarm-fg);
+  display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; }
+#alarm[hidden] { display: none; }
+#alarm .h { font-size: 44px; font-weight: 900; }
+#alarm .d { font-size: 24px; font-weight: 700; margin: 12px 0 28px; }
+#alarm button { min-height: 72px; min-width: 70%; border-radius: 18px; border: 0; font-size: 26px; font-weight: 900; background: var(--alarm-fg); color: var(--alarm); }
+
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 9;
+  background: var(--fg); color: var(--bg); border-radius: 14px; padding: 8px 8px 8px 16px; display: flex; gap: 12px; align-items: center;
+  width: min(440px, calc(100% - 32px)); font-size: 16px; }
+#toast[hidden] { display: none; }
+#toast button { background: var(--bg); color: var(--fg); border: 0; border-radius: 10px; min-height: 44px; padding: 0 14px; font-weight: 800; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header id="top">
+    <span id="clock"></span>
+    <span id="fresh"></span>
+    <div id="trial"></div>
+  </header>
+
+  <div id="overdue"></div>
+  <section id="next" class="card" aria-live="polite"></section>
+  <section id="countdown"></section>
+
+  <details id="dAlts"><summary>ほかの候補</summary><div id="alts"></div></details>
+  <details id="dList"><summary>待ち時間一覧・手直し</summary><div id="list"></div></details>
+  <details id="dSim"><summary>このまま行くと</summary><div id="sim"></div></details>
+  <details id="dNotify"><summary>お知らせ・カレンダー</summary><div id="notify"></div></details>
+  <details id="dRules"><summary>判断ルール</summary><div id="rules"></div></details>
+  <details id="dSet"><summary>設定</summary><div id="settings"></div></details>
+
+  <footer>
+    <a href="https://queue-times.com/" target="_blank" rel="noopener">Powered by Queue-Times.com</a>
+    <div id="src" class="note"></div>
+  </footer>
+</div>
+
+<div id="alarm" hidden role="alertdialog" aria-live="assertive">
+  <div class="h">そろそろ移動</div>
+  <div class="d" id="alarmText"></div>
+  <button id="alarmOk">OK</button>
+</div>
+<div id="toast" hidden><span id="toastText"></span><button id="toastUndo">取り消す</button></div>
+
+<script>
+'use strict';
+
+/* ============ 予定データ ============ */
+const DAYS = {
+  d4: { key: 'd4', date: '2026-11-04', label: '11/4（水）', start: '15:00', end: '20:00', endText: '20:00 退園 → シティウォークの551へ', startArea: 'ハリウッド' },
+  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:15', end: '21:30', endText: '21:30 出口へ（ホテル門限23時）', startArea: 'ハリウッド' },
+};
+// type: fixed=時間指定 / pass=エクスプレス / standby=スタンバイ / event=イベント / meal=食事 / rest=休憩
+// area が null のもの（食事・休憩など）は「近くで済ませる」扱い（移動は同じエリアの時間）
+const ITEMS = [
+  { id: 'sadako',  name: '貞子', days: ['d4'], type: 'pass', dur: 15, est: 10, pri: 3, qt: 12324, area: 'ハリウッド' },
+  { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', dur: 30, area: 'ハリウッド' },
+  { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
+  { id: 'dinner4', name: '夕食（軽め）', days: ['d4'], type: 'meal', after: '17:00', by: '18:30', dur: 30, pri: 3, area: null },
+  { id: 'zombie4', name: 'ゾンビ・デ・ダンス', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
+  { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', days: ['d4'], type: 'fixed', time: '18:50', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
+  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
+  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
+  { id: 'conan',   name: '名探偵コナン 4-D', days: ['d4', 'd5'], type: 'standby', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
+  { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'fixed', time: '11:00', dur: 30, qt: 12065, area: 'ハリー・ポッター' },
+  { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
+  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', days: ['d5'], type: 'fixed', time: '12:30', dur: 20, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'sing',    name: 'SING ON TOUR', days: ['d4', 'd5'], type: 'standby', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
+  { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', dur: 30, qt: 12061, area: 'ニンテンドー' },
+  { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', days: ['d5'], type: 'fixed', time: '16:00', dur: 20, qt: 14402, area: 'ニンテンドー' },
+  { id: 'photo',   name: '写真・グッズ・USJ土産', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
+  { id: 'dinner5', name: '夕食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 40, pri: 3, area: null },
+  { id: 'mi',      name: 'ミッション・インポッシブル', days: ['d5'], type: 'fixed', time: '18:00', dur: 30, area: 'ニューヨーク' },
+  { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
+  { id: 'csm',     name: 'チェンソーマン 4-D', days: ['d4', 'd5'], type: 'standby', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
+  { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
+];
+const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
+const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
+const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
+
+/* ============ 保存（localStorage は必ず try/catch） ============ */
+const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {} };
+let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
+S.times = S.times || {};
+const saveS = () => LS.set(K.settings, S);
+const blankState = () => ({ status: {}, at: {}, paused: {}, overrides: {}, area: {} });
+function loadState(trial) { return Object.assign(blankState(), LS.get(trial ? K.trial : K.state, {})); }
+function saveState(trial, st) { LS.set(trial ? K.trial : K.state, st); }
+
+/* ============ 時刻（端末の設定に関係なく日本時間で計算） ============ */
+const toMin = (hm) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
+const pad = (n) => String(n).padStart(2, '0');
+const fmt = (min) => { const m = Math.round(min); return `${Math.floor(m / 60)}:${pad(((m % 60) + 60) % 60)}`; };
+const dur = (min) => { const m = Math.max(0, Math.round(min)); return m >= 60 ? `${Math.floor(m / 60)}時間${m % 60 ? (m % 60) + '分' : ''}` : `${m}分`; };
+function jstNow() {
+  const d = new Date(Date.now() + 9 * 3600e3);
+  return { date: d.toISOString().slice(0, 10), min: d.getUTCHours() * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60 };
+}
+const jstHM = (ms) => { const d = new Date(ms + 9 * 3600e3); return `${d.getUTCHours()}:${pad(d.getUTCMinutes())}`; };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const short = (i) => i.short || i.name;
+const fixedTime = (i) => toMin(S.times[i.id] || i.time);
+const travel = (a, b) => (!a || !b || a === b) ? +S.same : +S.diff;
+
+// 今どの日の、何時として表示するか
+function getCtx() {
+  const real = jstNow();
+  let dayKey, trial = false;
+  if (S.day === 'auto') {
+    if (real.date === DAYS.d4.date) dayKey = 'd4';
+    else if (real.date === DAYS.d5.date) dayKey = 'd5';
+    else { dayKey = real.date > DAYS.d5.date ? 'd5' : 'd4'; trial = true; }
+  } else {
+    dayKey = S.day;
+    if (real.date !== DAYS[dayKey].date) trial = true;
+  }
+  const day = DAYS[dayKey];
+  let now;
+  if (S.fixTime) { now = toMin(S.fixTime); trial = true; }
+  else if (trial) now = toMin(day.start);
+  else now = Math.floor(real.min);
+  return { real, day, dayKey, trial, now, start: toMin(day.start), end: toMin(day.end) };
+}
+
+/* ============ 待ち時間データ ============ */
+let W = { rides: {}, updatedAt: 0, parkOpen: false, source: '' };
+function normalize(json) {
+  const list = [...(json.rides || []), ...(json.lands || []).flatMap((l) => l.rides || [])];
+  const rides = {}; let up = 0;
+  for (const r of list) {
+    const lu = Date.parse(r.last_updated) || 0;
+    rides[r.id] = { wait: r.wait_time, open: r.is_open, lu };
+    if (lu > up) up = lu;
+  }
+  // 全部 false のときは開園前・閉園後とみなして「休止」判定に使わない
+  return { rides, updatedAt: up, parkOpen: list.some((r) => r.is_open) };
+}
+async function getJSON(url, ms) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+async function refresh() {
+  let got = null, src = '';
+  try { got = normalize(await getJSON(QT_URL, 6000)); src = 'Queue-Times 直接'; } catch {}
+  if (!got || !Object.keys(got.rides).length) {
+    try { got = normalize(await getJSON('./waits.json?t=' + Date.now(), 8000)); src = 'waits.json'; } catch { got = null; }
+  }
+  const cached = LS.get(K.data, null);
+  if (got && Object.keys(got.rides).length) {
+    if (cached && cached.updatedAt > got.updatedAt) W = Object.assign(cached, { source: '保存データ（こちらが新しい）' });
+    else { W = Object.assign(got, { source: src }); LS.set(K.data, got); }
+  } else if (cached) {
+    W = Object.assign(cached, { source: '保存データ（電波なし？）' });
+  } else {
+    W = { rides: {}, updatedAt: 0, parkOpen: false, source: '取得できませんでした' };
+  }
+  render();
+}
+
+/* ============ 判断の材料 ============ */
+function isPaused(i, st) {
+  if (st.paused[i.id]) return 'manual';
+  if (i.qt && W.parkOpen) { const r = W.rides[i.qt]; if (r && r.open === false) return 'auto'; }
+  return false;
+}
+// 今の待ち時間。手入力は、それより新しい自動データが来るまで優先
+function waitOf(i, st) {
+  if (i.type !== 'standby' && i.type !== 'pass') return { wait: 0, src: null };
+  const o = st.overrides[i.id];
+  const r = i.qt ? W.rides[i.qt] : null;
+  if (o && (i.type === 'pass' || !r || !r.lu || o.at > r.lu)) return { wait: o.wait, src: '手入力' };
+  if (i.type === 'pass') return { wait: i.est, src: 'パス' };
+  if (r && r.open !== false && typeof r.wait === 'number') return { wait: r.wait, src: '自動' };
+  return { wait: i.est, src: '目安' };
+}
+function buildEnv(c) {
+  const st = loadState(c.trial);
+  const items = ITEMS.filter((i) => i.days.includes(c.dayKey));
+  const paused = new Map();
+  const w = {};
+  for (const i of items) { const p = isPaused(i, st); if (p) paused.set(i.id, p); w[i.id] = waitOf(i, st); }
+  return { c, st, items, paused, w, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
+}
+const eligible = (env, done) => env.items.filter((i) => !done.has(i.id) && !env.paused.has(i.id) && !(S.tired && i.pri === 1));
+
+// 時刻 t・場所 area から「次にすること」を1つ決める
+function plan(t, area, done, env) {
+  const end = env.c.end;
+  const pool = eligible(env, done);
+  const fixed = pool.filter((i) => i.type === 'fixed').map((i) => ({ i, time: fixedTime(i) }))
+    .filter((f) => t <= f.time + 15).sort((a, b) => a.time - b.time);
+  const nf = fixed[0] || null;
+  if (nf) {
+    const tr = travel(area, nf.i.area);
+    if (t >= nf.time - tr - 5) {
+      const start = Math.max(t + tr, nf.time);
+      return { kind: 'fixed', item: nf.i, time: nf.time, travel: tr, moveAt: nf.time - tr, start, finish: start + nf.i.dur, nf };
+    }
+  }
+  const cands = []; let next = null;
+  for (const i of pool) {
+    if (i.type === 'fixed') continue;
+    const tr = travel(area, i.area);
+    const wait = env.w[i.id].wait;
+    const cost = tr + wait + i.dur;
+    // 空き時間の終わり ＝ 時間指定の時刻 − 移動 − 5分
+    const limit = nf ? nf.time - travel(i.area || area, nf.i.area) - 5 : end;
+    if (i.after && t + tr < toMin(i.after)) {
+      const a = toMin(i.after);
+      if (a + wait + i.dur <= limit && (!next || a - tr < next.at)) next = { at: a - tr, item: i };
+      continue;
+    }
+    const finish = t + cost;
+    if (finish > limit) continue;
+    let score = (i.pri || 1) * 60 + ((i.est ?? wait) - wait) * 0.8 - cost * 0.5;
+    if (i.type === 'pass') score += 25;
+    if (i.type === 'meal' && toMin(i.by) - finish <= 30) score += 80; // 食べ終わる時刻が締め切りの30分前を過ぎるなら急ぐ
+    cands.push({ item: i, travel: tr, wait, cost, finish, score, src: env.w[i.id].src });
+  }
+  cands.sort((a, b) => b.score - a.score);
+  if (cands.length) return Object.assign({ kind: 'go', alts: cands.slice(1, 3), nf }, cands[0]);
+  const moveAt = nf ? nf.time - travel(area, nf.i.area) - 5 : null;
+  if (next && next.at < end && (!nf || next.at < moveAt)) return { kind: 'wait', until: next.at, item: next.item, nf };
+  if (nf) return { kind: 'move', item: nf.i, nf, moveAt };
+  return { kind: 'end' };
+}
+
+// 今の待ち時間が続くとして、退園までを予測
+function simulate(env, t0) {
+  const end = env.c.end;
+  let t = t0, area = env.area;
+  const done = new Set(env.done), tl = [];
+  for (let k = 0; k < 80 && t < end; k++) {
+    const r = plan(t, area, done, env);
+    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time });
+    else if (r.kind === 'go') tl.push({ from: t, to: r.finish, item: r.item, wait: r.wait });
+    else if (r.kind === 'wait' || r.kind === 'move') {
+      const nt = Math.max(t + 1, r.kind === 'wait' ? r.until : r.moveAt);
+      if (nt - t >= 5) tl.push({ from: t, to: nt, free: true });
+      t = nt; continue;
+    } else break;
+    t = r.finish;
+    done.add(r.item.id);
+    if (r.item.area) area = r.item.area;
+  }
+  const left = eligible(env, done).filter((i) => !(i.type === 'fixed' && fixedTime(i) + 15 < t0));
+  return { tl, left };
+}
+
+function reasonOf(r, env) {
+  const i = r.item, p = [];
+  if (i.type === 'pass') p.push('エクスプレス・パスで短い待ち');
+  else if (i.type === 'meal') p.push(toMin(i.by) - r.finish < 0 ? `${i.by}の目標を過ぎそう。早めに食事` : `${i.by}までに食事`);
+  else if (i.type === 'event') p.push(`${i.after}から開催中`);
+  else if (i.type === 'rest') p.push('空き時間に');
+  else if (r.src === '目安') p.push('待ちは目安で計算');
+  else {
+    const d = i.est - r.wait;
+    if (d >= 5) p.push(`目安より${d}分短い`);
+    else if (d <= -5) p.push(`目安より${-d}分長いが、今入れる中ではいちばん良い`);
+    else p.push('待ちは目安どおり');
+  }
+  p.push(r.nf ? `${fmt(r.nf.time)}の${short(r.nf.i)}に間に合う` : `${env.c.day.end}の退園までに終わる`);
+  return p.join('。');
+}
+
+/* ============ 画面 ============ */
+const $ = (id) => document.getElementById(id);
+let lastEnv = null, lastCtx = null;
+
+function render() {
+  const c = getCtx();
+  const env = buildEnv(c);
+  lastEnv = env; lastCtx = c;
+  const t = Math.max(c.now, c.start);
+
+  // 1. 上の小さい表示
+  $('clock').innerHTML = `<b>${c.day.label} ${fmt(c.now)}</b>${c.now < c.start ? '（入園前）' : ''}`;
+  if (W.updatedAt) {
+    const ago = Math.max(0, Math.round((Date.now() - W.updatedAt) / 60000));
+    $('fresh').textContent = `自動更新：${jstHM(W.updatedAt)}時点（${ago < 1 ? 'たった今' : dur(ago) + '前'}）`;
+    $('fresh').className = ago >= 20 ? 'old' : '';
+  } else { $('fresh').textContent = '自動更新：データなし'; $('fresh').className = 'old'; }
+  $('trial').textContent = c.trial
+    ? `お試し表示：${c.day.label} ${fmt(c.now)} の状態です（ここで押した「済」などは本番に残りません）` : '';
+  $('src').textContent = W.source ? `データ：${W.source}` : '';
+
+  // 時間指定を15分過ぎても「済」でないもの
+  const overdue = c.now >= c.end ? [] : env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && c.now > fixedTime(i) + 15);
+  $('overdue').innerHTML = overdue.map((i) => `
+    <div class="ask"><p>${esc(i.name)}（${fmt(fixedTime(i))}）は済んだ？</p>
+    <div class="row2"><button class="btn primary" data-act="done" data-id="${i.id}">済にする</button>
+    <button class="btn" data-act="skip" data-id="${i.id}">あきらめる</button></div></div>`).join('');
+
+  // 2. 次はここ
+  const r = c.now >= c.end ? { kind: 'end' } : plan(t, env.area, env.done, env);
+  let h = '';
+  const lead = c.now < c.start ? `入園前（${c.day.start}からの予定）` : '次はここ';
+  if (r.kind === 'go') {
+    const i = r.item;
+    const tag = i.type === 'pass' ? '<span class="tag pass">パス</span>' : i.type === 'standby' ? '' : `<span class="tag">${TYPE_LABEL[i.type]}</span>`;
+    const w = (i.type === 'standby' || i.type === 'pass') ? `<span>待ち ${r.wait}分${r.src !== '自動' ? `<small>（${r.src}）</small>` : ''}</span>` : `<span>${i.dur}分くらい</span>`;
+    h = `<div class="label">${lead}</div><div class="name">${tag}${esc(i.name)}</div>
+      <div class="facts">${w}<span>${fmt(r.finish)}ごろ終わる</span></div>
+      <div class="reason">${esc(reasonOf(r, env))}</div>
+      <button class="big" data-act="done" data-id="${i.id}">終わった</button>`;
+  } else if (r.kind === 'fixed') {
+    const late = t > r.time;
+    h = `<div class="label">${lead}<span class="tag fixed" style="margin-left:6px">時間指定</span></div>
+      <div class="name">${esc(r.item.name)}</div>
+      <div class="facts"><span>${fmt(r.time)}から</span><span>${fmt(r.finish)}ごろ終わる</span></div>
+      <div class="reason">${late ? '時刻を過ぎています。急いで！' : t >= r.moveAt ? `今すぐ移動（移動${r.travel}分）` : `${fmt(r.moveAt)}には移動（移動${r.travel}分）`}</div>
+      <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
+  } else if (r.kind === 'move') {
+    h = `<div class="label">${lead}</div><div class="name">${esc(short(r.item))}へ移動</div>
+      <div class="facts"><span>${fmt(r.nf.time)}の時間指定</span></div>
+      <div class="reason">今から入れるものはありません。空き時間は休憩・写真に（${fmt(r.nf.time - travel(env.area, r.item.area))}までに出発）</div>`;
+  } else if (r.kind === 'wait') {
+    h = `<div class="label">${lead}</div><div class="name">${esc(r.item.name)}は${r.item.after}から</div>
+      <div class="reason">それまでは休憩・写真に（${fmt(r.until)}ごろ動き出す）</div>`;
+  } else {
+    h = `<div class="label">${c.now >= c.end ? '退園時刻です' : '今日の予定はここまで'}</div>
+      <div class="name">出口へ</div><div class="reason">${esc(c.day.endText)}</div>`;
+  }
+  $('next').innerHTML = h;
+
+  // 3. カウントダウン
+  const nextFixed = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedTime(i) + 15 >= c.now)
+    .sort((a, b) => fixedTime(a) - fixedTime(b))[0];
+  const cd = $('countdown');
+  if (nextFixed) {
+    const ft = fixedTime(nextFixed);
+    const moveAt = ft - travel(env.area, nextFixed.area);
+    const isNow = c.now >= moveAt;
+    cd.className = isNow ? 'now' : '';
+    cd.innerHTML = `${esc(short(nextFixed))} ${fmt(ft)} まで ${c.now >= ft ? '<span>時刻です</span>' : 'あと' + dur(ft - c.now)}
+      <div class="sub">${isNow ? '今すぐ移動！' : fmt(moveAt) + 'には移動'}</div>`;
+  } else {
+    cd.className = '';
+    cd.innerHTML = c.now < c.end ? `退園 ${c.day.end} まで あと${dur(c.end - c.now)}<div class="sub">${esc(c.day.endText)}</div>` : esc(c.day.endText);
+  }
+  if (!notify.on && !c.trial) cd.innerHTML += `<div id="notifyHint"><button class="btn small" data-act="notify">🔔 お知らせをオン</button></div>`;
+
+  // ほかの候補
+  $('alts').innerHTML = r.kind === 'go' && r.alts.length
+    ? r.alts.map((a, n) => `<div class="item"><div class="n">${n + 2}位　${esc(a.item.name)}</div>
+        <div class="m">${(a.item.type === 'standby' || a.item.type === 'pass') ? `待ち${a.wait}分・` : ''}${fmt(a.finish)}ごろ終わる。${esc(reasonOf(Object.assign({ nf: r.nf }, a), env))}</div>
+        <div class="acts"><button class="btn small" data-act="done" data-id="${a.item.id}">これを済にする</button></div></div>`).join('')
+    : '<div class="note">今ほかに入れる候補はありません。</div>';
+
+  renderList(env);
+  renderSim(env, t);
+  renderRules(env);
+  renderNotify();
+  checkAlarms(c, env);
+}
+
+function renderList(env) {
+  const rows = [...env.items].sort((a, b) => {
+    const ta = a.type === 'fixed' ? fixedTime(a) : a.after ? toMin(a.after) : 0;
+    const tb = b.type === 'fixed' ? fixedTime(b) : b.after ? toMin(b.after) : 0;
+    return (env.done.has(a.id) - env.done.has(b.id)) || (ta - tb);
+  });
+  $('list').innerHTML = `<div class="note">「直す」で待ち時間を手入力できます（新しい自動データが来たら自動に戻ります）。</div>` + rows.map((i) => {
+    const st = env.st.status[i.id];
+    const p = env.paused.get(i.id);
+    const ride = i.type === 'standby' || i.type === 'pass';
+    let meta = [];
+    if (i.type === 'fixed') meta.push(`<span class="tag fixed">時間指定 ${fmt(fixedTime(i))}</span>`);
+    else meta.push(`<span class="tag ${i.type === 'pass' ? 'pass' : ''}">${TYPE_LABEL[i.type]}</span>`);
+    if (ride) { const w = env.w[i.id]; meta.push(`待ち <b>${w.wait}分</b>（${w.src}）`); }
+    if (i.est != null) meta.push(`目安${i.est}分`);
+    if (i.after) meta.push(`${i.after}以降`);
+    if (i.by) meta.push(`${i.by}までに`);
+    if (i.pri) meta.push(`優先${PRI_LABEL[i.pri]}`);
+    if (i.days.length === 2) meta.push('両日');
+    const status = st === 'done' ? '<span class="tag ok">済</span>' : st === 'skip' ? '<span class="tag">あきらめ</span>' : p ? `<span class="tag fixed">休止中${p === 'auto' ? '（自動）' : ''}</span>` : '';
+    const acts = [];
+    if (st) acts.push(`<button class="btn small" data-act="undo" data-id="${i.id}">戻す</button>`);
+    else acts.push(`<button class="btn small" data-act="done" data-id="${i.id}">済</button>`);
+    if (ride && !st) acts.push(`<button class="btn small" data-act="edit" data-id="${i.id}">直す</button>`);
+    if (!st && p !== 'auto') acts.push(`<button class="btn small" data-act="pause" data-id="${i.id}">${p ? '再開' : '休止'}</button>`);
+    return `<div class="item ${st ? 'dim' : ''}"><div class="n">${status}${esc(i.name)}</div>
+      <div class="m">${meta.join('・')}</div><div class="acts">${acts.join('')}</div></div>`;
+  }).join('');
+}
+
+function renderSim(env, t0) {
+  if (lastCtx.now >= env.c.end) { $('sim').innerHTML = '<div class="note">今日はおしまいです。</div>'; return; }
+  const { tl, left } = simulate(env, t0);
+  const rows = tl.map((x) => x.free
+    ? `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div class="free">休憩・写真・移動</div>`
+    : `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div>${esc(x.item.name)}${x.at != null ? `<span class="note">（${fmt(x.at)}指定）</span>` : x.wait ? `<span class="note">（待ち${x.wait}分）</span>` : ''}</div>`).join('');
+  $('sim').innerHTML = `<div class="note">今の待ち時間がずっと続くと仮定した予測です。</div>
+    <div class="tl" style="margin-top:8px">${rows || '<div></div><div class="note">予定なし</div>'}<div class="t">${env.c.day.end}</div><div>${esc(env.c.day.endText)}</div></div>
+    <h4 style="margin:14px 0 4px">このままだと入らない</h4>
+    ${left.length ? '<ul class="rules">' + left.map((i) => `<li>${esc(i.name)}${env.w[i.id].wait ? `（待ち${env.w[i.id].wait}分）` : ''}</li>`).join('') + '</ul>' : '<div class="note">全部入る見込みです 🎉</div>'}
+    ${S.tired ? '<div class="note">疲れたモード中：優先度「低」は外しています。</div>' : ''}`;
+}
+
+function renderRules(env) {
+  const bd = env.items.find((i) => i.id === 'backdrop');
+  const bdHigh = bd && env.w.backdrop && env.w.backdrop.wait > 90;
+  const fdStop = env.paused.has('fd');
+  $('rules').innerHTML = `<ul class="rules">
+    <li class="${bdHigh ? 'hl' : ''}">バックドロップが90分超なら、ミニオンを先に。21時台にもう一度見る${bdHigh ? `（今 ${env.w.backdrop.wait}分）` : ''}</li>
+    <li class="${fdStop ? 'hl' : ''}">フライング・ダイナソーが止まっていたら、休止として扱う（自動で外れなければ「待ち時間一覧」で「休止」）</li>
+    <li>21:30には出口へ</li></ul>
+    <h4 style="margin:14px 0 4px">「次はここ」の決め方</h4>
+    <ul class="rules note">
+      <li>次の時間指定までの空き時間（時刻 − 移動 − 5分）に終わるものだけが候補</li>
+      <li>かかる時間 ＝ 移動（同じエリア${S.same}分・違うエリア${S.diff}分）＋ 待ち ＋ 所要</li>
+      <li>点数 ＝ 優先度（高3・中2・低1）×60 ＋（目安待ち − 今の待ち）×0.8 − かかる時間×0.5。パスは＋25、食事の締め切りまで30分以内（食べ終わる時刻で判定）なら＋80</li>
+      <li>開園中に止まっているものは「休止中」として外す</li>
+      <li>疲れたモードでは優先度「低」を外す</li>
+    </ul>`;
+}
+
+/* ============ 操作 ============ */
+let toastTimer = null, undoFn = null;
+function toast(text, undo) {
+  $('toastText').textContent = text; undoFn = undo;
+  $('toastUndo').hidden = !undo; $('toast').hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; undoFn = null; }, 7000);
+}
+$('toastUndo').addEventListener('click', () => { if (undoFn) undoFn(); $('toast').hidden = true; undoFn = null; });
+
+function mutate(fn) {
+  const c = getCtx(); const st = loadState(c.trial);
+  const before = JSON.stringify(st);
+  fn(st, c);
+  saveState(c.trial, st);
+  render();
+  return () => { saveState(c.trial, JSON.parse(before)); render(); };
+}
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const id = b.dataset.id, act = b.dataset.act;
+  const item = ITEMS.find((i) => i.id === id);
+  if (act === 'done' || act === 'skip') {
+    const undo = mutate((st, c) => {
+      st.status[id] = act; st.at[id] = Date.now();
+      if (act === 'done' && item.area) st.area[c.dayKey] = item.area;
+    });
+    toast(`${short(item)}を${act === 'done' ? '済' : 'あきらめ'}にしました`, undo);
+  } else if (act === 'undo') {
+    mutate((st) => { delete st.status[id]; delete st.at[id]; });
+  } else if (act === 'pause') {
+    mutate((st) => { if (st.paused[id]) delete st.paused[id]; else st.paused[id] = true; });
+  } else if (act === 'edit') {
+    const cur = lastEnv && lastEnv.w[id] ? lastEnv.w[id].wait : '';
+    const v = prompt(`${item.name} の待ち時間（分）\n空欄にすると自動の数字に戻ります`, cur);
+    if (v === null) return;
+    mutate((st) => {
+      const n = parseInt(v.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xFEE0)), 10);
+      if (v.trim() === '' || isNaN(n)) delete st.overrides[id];
+      else st.overrides[id] = { wait: Math.max(0, n), at: Date.now() };
+    });
+  } else if (act === 'notify') {
+    enableNotify();
+  }
+});
+
+/* ============ お知らせ（音・画面いっぱい・画面オフ防止） ============ */
+const notify = { on: false, wanted: LS.get(K.notify, false), ctx: null, lock: null };
+function unlockAudio() {
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+  try {
+    notify.ctx = notify.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (notify.ctx.state !== 'running') notify.ctx.resume();
+    const src = notify.ctx.createBufferSource(); // 無音を1回鳴らして iPhone の制限を解除
+    src.buffer = notify.ctx.createBuffer(1, 1, 22050); src.connect(notify.ctx.destination); src.start(0);
+    return true;
+  } catch { return false; }
+}
+function beep(times = 3) {
+  const a = notify.ctx;
+  if (a) {
+    try {
+      if (a.state !== 'running') a.resume();
+      const t0 = a.currentTime + 0.05;
+      for (let k = 0; k < times; k++) for (const [f, dt] of [[880, 0], [1320, 0.2]]) {
+        const o = a.createOscillator(), g = a.createGain(), s = t0 + k * 0.8 + dt;
+        o.type = 'square'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.35, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.18);
+        o.connect(g).connect(a.destination); o.start(s); o.stop(s + 0.2);
+      }
+    } catch {}
+  }
+  try { navigator.vibrate && navigator.vibrate([400, 200, 400, 200, 400]); } catch {}
+}
+async function keepAwake() {
+  if (!notify.on || !('wakeLock' in navigator) || document.visibilityState !== 'visible' || notify.lock) return;
+  try {
+    notify.lock = await navigator.wakeLock.request('screen');
+    notify.lock.addEventListener('release', () => { notify.lock = null; renderNotify(); });
+  } catch {}
+  renderNotify();
+}
+function enableNotify() {
+  notify.on = unlockAudio();
+  notify.wanted = true; LS.set(K.notify, true);
+  beep(1);
+  keepAwake();
+  render();
+}
+function disableNotify() {
+  notify.on = false; notify.wanted = false; LS.set(K.notify, false);
+  if (notify.lock) { notify.lock.release().catch(() => {}); notify.lock = null; }
+  render();
+}
+// 前に「オン」にしていたら、画面のどこかを最初にタップしたときに自動で再開する
+document.addEventListener('pointerdown', () => { if (notify.wanted && !notify.on) { notify.on = unlockAudio(); keepAwake(); renderNotify(); } }, true);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') { keepAwake(); refresh(); }
+});
+
+function renderNotify() {
+  const wl = 'wakeLock' in navigator;
+  $('notify').innerHTML = `
+    <h4 style="margin:0 0 6px">① カレンダーに登録（確実）</h4>
+    <div class="note">時間指定と退園時刻を、20分前と5分前のアラーム付きでカレンダーに入れます。アプリを閉じていても通知が来ます。iPhoneは <b>Safari</b> で開いて押してください。</div>
+    <button class="btn primary" style="width:100%;margin-top:8px" id="icsBtn">時間指定をカレンダーに入れる</button>
+    <h4 style="margin:16px 0 6px">② アプリを開いているとき</h4>
+    <div class="note">時間指定の20分前と10分前に、画面いっぱいの「そろそろ移動」と音でお知らせします。マナーモードだと音が出ないことがあります。</div>
+    <div class="row2" style="margin-top:8px">
+      ${notify.on ? '<button class="btn" id="nOff">お知らせをオフ</button>' : '<button class="btn primary" data-act="notify">お知らせをオン</button>'}
+      <button class="btn" id="nTest">テスト表示</button>
+    </div>
+    <div class="note" style="margin-top:6px">お知らせ：<b>${notify.on ? 'オン' : notify.wanted ? 'オン（画面を一度タップすると音が有効）' : 'オフ'}</b>　画面オフ防止：<b>${!wl ? 'この端末では使えません' : notify.lock ? 'オン' : 'オフ'}</b></div>`;
+  $('icsBtn').onclick = downloadICS;
+  $('nTest').onclick = () => showAlarm('テスト：ハリー・ポッター 11:00（あと20分）／移動10分');
+  const off = $('nOff'); if (off) off.onclick = disableNotify;
+}
+
+function showAlarm(text) {
+  $('alarmText').textContent = text;
+  $('alarm').hidden = false;
+  beep(3);
+}
+$('alarmOk').addEventListener('click', () => { $('alarm').hidden = true; });
+
+function checkAlarms(c, env) {
+  if (c.trial) return; // お試し表示中は鳴らさない
+  const fired = LS.get(K.fired, {});
+  const now = c.real.min;
+  for (const i of env.items) {
+    if (i.type !== 'fixed' || env.done.has(i.id) || env.paused.has(i.id)) continue;
+    const ft = fixedTime(i);
+    for (const [off, until] of [[20, 10], [10, 0]]) {
+      const key = `${c.day.date}|${i.id}|${S.times[i.id] || i.time}|${off}`;
+      if (!fired[key] && now >= ft - off && now < ft - until) {
+        fired[key] = Date.now(); LS.set(K.fired, fired);
+        showAlarm(`${short(i)} ${fmt(ft)}（あと${dur(ft - now)}）／移動${travel(env.area, i.area)}分`);
+        return;
+      }
+    }
+  }
+}
+
+/* ============ カレンダー（.ics） ============ */
+function icsText(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+function icsFold(line) { // 75バイトごとに折り返す（日本語対応）
+  const enc = new TextEncoder(); let out = '', cur = '', bytes = 0;
+  for (const ch of line) {
+    const b = enc.encode(ch).length;
+    if (bytes + b > (out ? 74 : 75)) { out += (out ? '\r\n ' : '') + cur; cur = ''; bytes = 0; }
+    cur += ch; bytes += b;
+  }
+  return out ? out + '\r\n ' + cur : cur;
+}
+function icsUTC(date, min) { // 日本時間 → UTC表記
+  const [y, m, d] = date.split('-').map(Number);
+  const t = new Date(Date.UTC(y, m - 1, d, 0, min) - 9 * 3600e3);
+  return t.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+function buildICS() {
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//usj-navi//JA', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:USJナビ', 'X-WR-TIMEZONE:Asia/Tokyo'];
+  const stamp = icsUTC('2026-10-01', 0);
+  const ev = (uid, date, start, len, title, desc) => {
+    L.push('BEGIN:VEVENT', `UID:${uid}@usj-navi`, `DTSTAMP:${stamp}`, `DTSTART:${icsUTC(date, start)}`, `DTEND:${icsUTC(date, start + len)}`,
+      `SUMMARY:${icsText(title)}`, `DESCRIPTION:${icsText(desc)}`, `LOCATION:${icsText('ユニバーサル・スタジオ・ジャパン')}`);
+    for (const m of [20, 5]) L.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsText(`${m}分後：${title}`)}`, `TRIGGER:-PT${m}M`, 'END:VALARM');
+    L.push('END:VEVENT');
+  };
+  for (const day of Object.values(DAYS)) {
+    for (const i of ITEMS.filter((x) => x.type === 'fixed' && x.days.includes(day.key))) {
+      const t = fixedTime(i);
+      ev(`${i.id}-${day.date}`, day.date, t, i.dur, `【USJ】${i.name}`, `時間指定 ${fmt(t)}。${S.diff}分前には移動を始める。`);
+    }
+    ev(`exit-${day.date}`, day.date, toMin(day.end), 15, '【USJ】退園（出口へ）', day.endText);
+  }
+  L.push('END:VCALENDAR');
+  return L.map(icsFold).join('\r\n') + '\r\n';
+}
+function downloadICS() {
+  const ics = buildICS();
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const changed = Object.keys(S.times).some((k) => S.times[k] && S.times[k] !== ITEMS.find((i) => i.id === k).time);
+  if (ios) {
+    // 時刻を変えていなければ、公開済みのファイルを開く（iPhone で一番確実）
+    location.href = changed ? 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics) : './usj-navi.ics';
+    return;
+  }
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'usj-navi.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/* ============ 設定 ============ */
+function renderSettings() {
+  const fixed = ITEMS.filter((i) => i.type === 'fixed');
+  $('settings').innerHTML = `<div class="set">
+    <label><span><b>疲れたモード</b><br><span class="note">優先度「低」を外す</span></span><input type="checkbox" id="sTired" ${S.tired ? 'checked' : ''}></label>
+    <label>日付<select id="sDay">
+      <option value="auto">自動（当日に切り替え）</option><option value="d4">11/4（水）</option><option value="d5">11/5（木）</option></select></label>
+    <label><span>時刻を固定<br><span class="note">お試し用。空欄で今の時刻</span></span>
+      <span><input type="time" id="sTime" value="${S.fixTime}"> <button class="btn small" id="sTimeClear">空欄に</button></span></label>
+    <label>移動（同じエリア）<span><input type="number" id="sSame" min="0" max="60" value="${S.same}"> 分</span></label>
+    <label>移動（違うエリア）<span><input type="number" id="sDiff" min="0" max="60" value="${S.diff}"> 分</span></label>
+    <h4>時間指定の時刻（チケットと違えば直す）</h4>
+    ${fixed.map((i) => `<label><span>${i.days[0] === 'd4' ? '11/4' : '11/5'} ${esc(short(i))}</span><input type="time" data-time="${i.id}" value="${S.times[i.id] || i.time}"></label>`).join('')}
+    <h4>記録を消す</h4>
+    <div class="row2"><button class="btn" id="sResetTrial">お試しの記録</button><button class="btn" id="sResetReal">本番の記録</button></div>
+    <div class="note">「済」「休止」「手入力」を消します。設定は残ります。</div>
+  </div>`;
+  $('sDay').value = S.day;
+  const upd = (fn) => { fn(); saveS(); render(); };
+  $('sTired').onchange = (e) => upd(() => { S.tired = e.target.checked; });
+  $('sDay').onchange = (e) => upd(() => { S.day = e.target.value; });
+  $('sTime').onchange = (e) => upd(() => { S.fixTime = e.target.value; });
+  $('sTimeClear').onclick = () => { $('sTime').value = ''; upd(() => { S.fixTime = ''; }); };
+  $('sSame').onchange = (e) => upd(() => { S.same = Math.max(0, +e.target.value || 0); });
+  $('sDiff').onchange = (e) => upd(() => { S.diff = Math.max(0, +e.target.value || 0); });
+  for (const inp of document.querySelectorAll('[data-time]')) inp.onchange = (e) => upd(() => { if (e.target.value) S.times[e.target.dataset.time] = e.target.value; });
+  $('sResetTrial').onclick = () => { if (confirm('お試しの記録を消しますか？')) { LS.del(K.trial); render(); } };
+  $('sResetReal').onclick = () => { if (confirm('本番の記録（済・休止・手入力）を消しますか？\n元に戻せません。')) { LS.del(K.state); render(); } };
+}
+
+/* ============ 開始 ============ */
+const cached = LS.get(K.data, null);
+if (cached) W = Object.assign(cached, { source: '保存データ' });
+renderSettings();
+render();
+refresh();
+setInterval(refresh, 3 * 60 * 1000); // 開いている間は3分おきに再取得
+setInterval(render, 20 * 1000);
+</script>
+</body>
+</html>

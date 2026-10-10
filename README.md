@@ -1,0 +1,14 @@
+# USJナビ
+
+11/4・11/5 の USJ で「次にどこへ行くか」を教えてくれるスマホ用Webアプリ。
+
+- `index.html` … アプリ本体（これ1つで動く）
+- `waits.json` … 待ち時間（GitHub Actions が日本時間 6:00〜22:59 に5分おきに更新）
+- `usj-navi.ics` … 時間指定のカレンダー（初期の時刻。アプリのボタンからも作れる）
+- `scripts/fetch-waits.mjs` … 待ち時間を取得して `waits.json` に保存
+- `scripts/dev-server.mjs` … PCで試す用（`node scripts/dev-server.mjs` → http://localhost:8000/）
+- `.github/workflows/fetch-waits.yml` … 自動取得と GitHub Pages への公開
+
+待ち時間データ: [Powered by Queue-Times.com](https://queue-times.com/)
+
+旅行が終わったら、GitHub の Actions → fetch-waits → 「…」→ Disable workflow で自動取得を止める。

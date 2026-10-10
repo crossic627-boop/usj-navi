@@ -1,0 +1,65 @@
+# 日本時間 6:00〜22:59 に5分おきに待ち時間を取得し、変わっていたら waits.json をコミットして公開し直す。
+# GitHub の定期実行は混雑時に数分〜十数分遅れることがあります。
+name: fetch-waits
+
+on:
+  schedule:
+    - cron: '*/5 21-23 * * *' # 日本時間 6:00〜8:59（UTC 21:00〜23:59）
+    - cron: '*/5 0-13 * * *'  # 日本時間 9:00〜22:59（UTC 0:00〜13:59）
+  workflow_dispatch:          # 手動実行
+  push:
+    branches: [main]          # index.html などを直したときも公開し直す
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: fetch-waits
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 待ち時間を取得
+        run: node scripts/fetch-waits.mjs
+
+      - name: 変わっていたらコミット
+        id: commit
+        run: |
+          if git diff --quiet -- waits.json; then
+            echo "変化なし"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add waits.json
+            git commit -m "待ち時間を更新"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: fetch
+    if: needs.fetch.outputs.changed == 'true' || github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
