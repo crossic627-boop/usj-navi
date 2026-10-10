@@ -50,6 +50,13 @@ a { color: var(--accent); }
 #next .facts { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 20px; font-weight: 700; }
 #next .facts span small { font-size: 15px; font-weight: 600; color: var(--muted); }
 #next .reason { margin-top: 8px; font-size: 17px; }
+#next .rank { margin-right: 6px; }
+#next .pcts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+#next .pcts span { border: 2px solid var(--accent); border-radius: 999px; padding: 2px 12px; font-size: 16px; font-weight: 700; }
+#next .pcts b { font-size: 22px; color: var(--accent); }
+#next .alt { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; }
+#next .alt .an { font-weight: 700; font-size: 18px; }
+#next .alt .am { font-size: 15px; color: var(--muted); }
 .big { display: block; width: 100%; min-height: 68px; margin-top: 14px; border: 0; border-radius: 16px;
   background: var(--accent); color: var(--accent-fg); font-size: 24px; font-weight: 800; }
 .big:active { transform: scale(.98); }
@@ -128,7 +135,6 @@ footer a { font-weight: 700; }
   <section id="next" class="card" aria-live="polite"></section>
   <section id="countdown"></section>
 
-  <details id="dAlts"><summary>ほかの候補</summary><div id="alts"></div></details>
   <details id="dList"><summary>待ち時間一覧・手直し</summary><div id="list"></div></details>
   <details id="dSim"><summary>このまま行くと</summary><div id="sim"></div></details>
   <details id="dNotify"><summary>お知らせ・カレンダー</summary><div id="notify"></div></details>
@@ -297,7 +303,36 @@ function buildEnv(c) {
   const paused = new Map();
   const w = {};
   for (const i of items) { const p = isPaused(i, st); if (p) paused.set(i.id, p); w[i.id] = waitOf(i, st); }
-  return { c, st, items, paused, w, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
+  const age = W.updatedAt ? Math.max(0, (Date.now() - W.updatedAt) / 60000) : 120;
+  return { c, st, items, paused, w, age, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
+}
+
+/* ============ 確率（待ち時間のぶれを見込んだ目安） ============ */
+// 標準正規分布の累積確率
+function phi(x) {
+  const z = Math.abs(x) / Math.SQRT2, k = 1 / (1 + 0.3275911 * z);
+  const erf = 1 - (((((1.061405429 * k - 1.453152027) * k) + 1.421413741) * k - 0.284496736) * k + 0.254829592) * k * Math.exp(-z * z);
+  return x >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
+}
+// かかる時間のぶれ（分）。待ちが長いほど・データが古いほど大きい
+function spread(i, wait, src, age) {
+  let s;
+  if (i.type === 'standby') s = src === '手入力' ? Math.max(3, wait * 0.2) : src === '目安' ? Math.max(8, wait * 0.4) : Math.max(5, wait * 0.3) * (1 + Math.min(age, 120) / 60);
+  else if (i.type === 'pass') s = Math.max(4, wait * 0.4);
+  else if (i.type === 'meal') s = 3 + i.dur * 0.2;
+  else s = 3; // イベント・休憩は切り上げられる
+  return Math.sqrt(s * s + 2 * 2); // 移動のぶれ（2分）も足す
+}
+const pct = (p) => Math.min(99, Math.max(1, Math.round(p * 100)));
+// 上位3つに、合計100%になるよう「おすすめ度」を配る
+function shares(list) {
+  const top = list.slice(0, 3);
+  const m = Math.max(...top.map((x) => x.score));
+  const e = top.map((x) => Math.exp((x.score - m) / 12));
+  const sum = e.reduce((a, b) => a + b, 0);
+  top.forEach((x, n) => { x.share = Math.max(1, Math.round((e[n] / sum) * 100)); });
+  top[0].share += 100 - top.reduce((a, x) => a + x.share, 0); // 合計をちょうど100%に（端数は1位で調整）
+  return top;
 }
 const eligible = (env, done) => env.items.filter((i) => !done.has(i.id) && !env.paused.has(i.id) && !(S.tired && i.pri === 1));
 
@@ -312,7 +347,8 @@ function plan(t, area, done, env) {
     const tr = travel(area, nf.i.area);
     if (t >= nf.time - tr - 5) {
       const start = Math.max(t + tr, nf.time);
-      return { kind: 'fixed', item: nf.i, time: nf.time, travel: tr, moveAt: nf.time - tr, start, finish: start + nf.i.dur, nf };
+      const ok = phi((nf.time - (t + tr)) / 2.5); // 移動のぶれだけ
+      return { kind: 'fixed', item: nf.i, time: nf.time, travel: tr, moveAt: nf.time - tr, start, finish: start + nf.i.dur, nf, ok };
     }
   }
   const cands = []; let next = null;
@@ -330,13 +366,18 @@ function plan(t, area, done, env) {
     }
     const finish = t + cost;
     if (finish > limit) continue;
+    // 間に合う確率：本当の締め切り（時間指定の時刻 − 移動）までに終わる見込み
+    const src = env.w[i.id].src;
+    const deadline = nf ? nf.time - travel(i.area || area, nf.i.area) : end;
+    const ok = phi((deadline - finish) / spread(i, wait, src, env.age));
     let score = (i.pri || 1) * 60 + ((i.est ?? wait) - wait) * 0.8 - cost * 0.5;
     if (i.type === 'pass') score += 25;
     if (i.type === 'meal' && toMin(i.by) - finish <= 30) score += 80; // 食べ終わる時刻が締め切りの30分前を過ぎるなら急ぐ
-    cands.push({ item: i, travel: tr, wait, cost, finish, score, src: env.w[i.id].src });
+    score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
+    cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok });
   }
   cands.sort((a, b) => b.score - a.score);
-  if (cands.length) return Object.assign({ kind: 'go', alts: cands.slice(1, 3), nf }, cands[0]);
+  if (cands.length) { const top = shares(cands); return Object.assign({ kind: 'go', alts: top.slice(1), nf }, top[0]); }
   const moveAt = nf ? nf.time - travel(area, nf.i.area) - 5 : null;
   if (next && next.at < end && (!nf || next.at < moveAt)) return { kind: 'wait', until: next.at, item: next.item, nf };
   if (nf) return { kind: 'move', item: nf.i, nf, moveAt };
@@ -418,14 +459,20 @@ function render() {
     const i = r.item;
     const tag = i.type === 'pass' ? '<span class="tag pass">パス</span>' : i.type === 'standby' ? '' : `<span class="tag">${TYPE_LABEL[i.type]}</span>`;
     const w = (i.type === 'standby' || i.type === 'pass') ? `<span>待ち ${r.wait}分${r.src !== '自動' ? `<small>（${r.src}）</small>` : ''}</span>` : `<span>${i.dur}分くらい</span>`;
-    h = `<div class="label">${lead}</div><div class="name">${tag}${esc(i.name)}</div>
+    const isRide = (x) => x.type === 'standby' || x.type === 'pass';
+    h = `<div class="label">${lead}</div><div class="name"><span class="rank">①</span>${tag}${esc(i.name)}</div>
+      <div class="pcts"><span>おすすめ <b>${r.share}%</b></span><span>間に合う <b>${pct(r.ok)}%</b></span></div>
       <div class="facts">${w}<span>${fmt(r.finish)}ごろ終わる</span></div>
       <div class="reason">${esc(reasonOf(r, env))}</div>
-      <button class="big" data-act="done" data-id="${i.id}">終わった</button>`;
+      <button class="big" data-act="done" data-id="${i.id}">終わった</button>
+      ${r.alts.map((a, n) => `<div class="alt"><div><div class="an">${'②③'[n]} ${esc(a.item.name)}</div>
+        <div class="am">おすすめ${a.share}%・間に合う${pct(a.ok)}%${isRide(a.item) ? `・待ち${a.wait}分` : ''}・${fmt(a.finish)}ごろ終わる</div></div>
+        <button class="btn small" data-act="done" data-id="${a.item.id}">済</button></div>`).join('')}`;
   } else if (r.kind === 'fixed') {
     const late = t > r.time;
     h = `<div class="label">${lead}<span class="tag fixed" style="margin-left:6px">時間指定</span></div>
       <div class="name">${esc(r.item.name)}</div>
+      <div class="pcts"><span>${fmt(r.time)}に間に合う <b>${pct(r.ok)}%</b></span></div>
       <div class="facts"><span>${fmt(r.time)}から</span><span>${fmt(r.finish)}ごろ終わる</span></div>
       <div class="reason">${late ? '時刻を過ぎています。急いで！' : t >= r.moveAt ? `今すぐ移動（移動${r.travel}分）` : `${fmt(r.moveAt)}には移動（移動${r.travel}分）`}</div>
       <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
@@ -458,13 +505,6 @@ function render() {
     cd.innerHTML = c.now < c.end ? `退園 ${c.day.end} まで あと${dur(c.end - c.now)}<div class="sub">${esc(c.day.endText)}</div>` : esc(c.day.endText);
   }
   if (!notify.on && !c.trial) cd.innerHTML += `<div id="notifyHint"><button class="btn small" data-act="notify">🔔 お知らせをオン</button></div>`;
-
-  // ほかの候補
-  $('alts').innerHTML = r.kind === 'go' && r.alts.length
-    ? r.alts.map((a, n) => `<div class="item"><div class="n">${n + 2}位　${esc(a.item.name)}</div>
-        <div class="m">${(a.item.type === 'standby' || a.item.type === 'pass') ? `待ち${a.wait}分・` : ''}${fmt(a.finish)}ごろ終わる。${esc(reasonOf(Object.assign({ nf: r.nf }, a), env))}</div>
-        <div class="acts"><button class="btn small" data-act="done" data-id="${a.item.id}">これを済にする</button></div></div>`).join('')
-    : '<div class="note">今ほかに入れる候補はありません。</div>';
 
   renderList(env);
   renderSim(env, t);
@@ -529,6 +569,10 @@ function renderRules(env) {
       <li>次の時間指定までの空き時間（時刻 − 移動 − 5分）に終わるものだけが候補</li>
       <li>かかる時間 ＝ 移動（同じエリア${S.same}分・違うエリア${S.diff}分）＋ 待ち ＋ 所要</li>
       <li>点数 ＝ 優先度（高3・中2・低1）×60 ＋（目安待ち − 今の待ち）×0.8 − かかる時間×0.5。パスは＋25、食事の締め切りまで30分以内（食べ終わる時刻で判定）なら＋80</li>
+      <li>間に合う確率：待ち時間は表示どおりとは限らないので、ぶれ（待ちの3割くらい・最低5分。データが古いほど大きく）を見込んで、次の時間指定（なければ退園）に間に合う見込みを出す</li>
+      <li>点数から「間に合わない危なさ」（1 − 間に合う確率）×60 を引いて順位を決める</li>
+      <li>おすすめ度：上位3つの点数の差を、合計100%になるように配分したもの（12点差でおよそ2.7倍）</li>
+      <li>％はどれも目安です。最後は自分の目と公式アプリで確かめてください</li>
       <li>開園中に止まっているものは「休止中」として外す</li>
       <li>疲れたモードでは優先度「低」を外す</li>
     </ul>`;
