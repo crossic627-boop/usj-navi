@@ -216,7 +216,7 @@ const ITEMS = [
   { id: 'mi',      name: 'ミッション・インポッシブル', chip: 'ミッション', days: ['d5'], type: 'fixed', time: '18:00', dur: 30, area: 'ニューヨーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', days: ['d4', 'd5'], type: 'standby', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
-  { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
+  { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
