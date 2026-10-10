@@ -209,7 +209,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-11a';
+const APP_VERSION = '2026-10-11b';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -218,7 +218,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
-const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {}, trialLive: false };
+const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {}, trialLive: false, pace: 1 };
 let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
 S.times = S.times || {};
 const saveS = () => LS.set(K.settings, S);
@@ -239,7 +239,29 @@ const jstHM = (ms) => { const d = new Date(ms + 9 * 3600e3); return `${d.getUTCH
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const short = (i) => i.short || i.name;
 const fixedTime = (i) => toMin(S.times[i.id] || i.time);
-const travel = (a, b) => (!a || !b || a === b) ? +S.same : +S.diff;
+// エリア同士の歩く時間（分）。隣どうしだけ書き、離れたエリアは一番近い道順の合計で計算する。
+// 出典: usjhack.com「USJエリア最新版まとめ」の入口からの所要時間と隣接関係をもとにした目安
+const WALK = [
+  ['ハリウッド', 'ニューヨーク', 4], ['ニューヨーク', 'ミニオン・パーク', 3], ['ミニオン・パーク', 'サンフランシスコ', 2],
+  ['サンフランシスコ', 'ジュラシック・パーク', 2], ['ジュラシック・パーク', 'アミティ', 2], ['アミティ', 'ハリー・ポッター', 3],
+  ['ハリー・ポッター', 'ワンダーランド', 3], ['ワンダーランド', 'ハリウッド', 6], ['ワンダーランド', 'ニンテンドー', 4],
+  ['ニンテンドー', 'ウォーターワールド', 2], ['ウォーターワールド', 'アミティ', 3],
+];
+const DIST = (() => {
+  const d = {};
+  const names = [...new Set(WALK.flatMap(([a, b]) => [a, b]))];
+  for (const a of names) { d[a] = {}; for (const b of names) d[a][b] = a === b ? 0 : Infinity; }
+  for (const [a, b, m] of WALK) { d[a][b] = m; d[b][a] = m; }
+  for (const k of names) for (const a of names) for (const b of names) if (d[a][k] + d[k][b] < d[a][b]) d[a][b] = d[a][k] + d[k][b];
+  return d;
+})();
+// 移動時間：同じエリア（または場所が決まっていないもの）は S.same 分。違うエリアは歩く時間×歩く速さ（最低 S.same 分）
+function travel(a, b) {
+  if (!a || !b || a === b) return +S.same;
+  const m = DIST[a] && DIST[a][b];
+  if (m == null || m === Infinity) return +S.diff;
+  return Math.max(+S.same, Math.round(m * (+S.pace || 1)));
+}
 
 // 今どの日の、何時として表示するか
 function getCtx() {
@@ -651,7 +673,7 @@ function renderRules(env) {
     <h4 style="margin:14px 0 4px">「次はここ」の決め方</h4>
     <ul class="rules note">
       <li>次の時間指定までの空き時間（時刻 − 移動 − 5分）に終わるものだけが候補</li>
-      <li>かかる時間 ＝ 移動（同じエリア${S.same}分・違うエリア${S.diff}分）＋ 待ち ＋ 所要</li>
+      <li>かかる時間 ＝ 移動 ＋ 待ち ＋ 所要。移動は同じエリアなら${S.same}分、違うエリアは下の「歩く時間」の一番近い道順の合計${+S.pace > 1 ? `×${S.pace}（ゆっくり）` : ''}</li>
       <li>点数 ＝ 優先度（高3・中2・低1）×60 ＋（目安待ち − 今の待ち）×0.8 − かかる時間×0.5。パスは＋25、食事の締め切りまで30分以内（食べ終わる時刻で判定）なら＋80</li>
       <li>間に合う確率：待ち時間は表示どおりとは限らないので、ぶれ（待ちの3割くらい・最低5分。データが古いほど大きく）を見込んで、次の時間指定（なければ退園）に間に合う見込みを出す</li>
       <li>点数から「間に合わない危なさ」（1 − 間に合う確率）×60 を引いて順位を決める</li>
@@ -659,7 +681,10 @@ function renderRules(env) {
       <li>％はどれも目安です。最後は自分の目と公式アプリで確かめてください</li>
       <li>開園中に止まっているものは「休止中」として外す</li>
       <li>疲れたモードでは優先度「低」を外す</li>
-    </ul>`;
+    </ul>
+    <h4 style="margin:14px 0 4px">エリア間の歩く時間（目安）</h4>
+    <div class="note">${WALK.map(([a, b, m]) => `${a}⇔${b} ${m}分`).join('　')}</div>
+    <div class="note">バイオハザードはハリウッド、ミッション・インポッシブルはニューヨークと仮定</div>`;
 }
 
 /* ============ 操作 ============ */
@@ -838,7 +863,7 @@ function buildICS() {
   for (const day of Object.values(DAYS)) {
     for (const i of ITEMS.filter((x) => x.type === 'fixed' && x.days.includes(day.key))) {
       const t = fixedTime(i);
-      ev(`${i.id}-${day.date}`, day.date, t, i.dur, `【USJ】${i.name}`, `時間指定 ${fmt(t)}。${S.diff}分前には移動を始める。`);
+      ev(`${i.id}-${day.date}`, day.date, t, i.dur, `【USJ】${i.name}`, `時間指定 ${fmt(t)}。遅れないように早めに移動。`);
     }
     ev(`exit-${day.date}`, day.date, toMin(day.end), 15, '【USJ】退園（出口へ）', day.endText);
   }
@@ -871,7 +896,7 @@ function renderSettings() {
     <label><span>時刻を固定<br><span class="note">お試し用。空欄で今の時刻</span></span>
       <span><input type="time" id="sTime" value="${S.fixTime}"> <button class="btn small" id="sTimeClear">空欄に</button></span></label>
     <label>移動（同じエリア）<span><input type="number" id="sSame" min="0" max="60" value="${S.same}"> 分</span></label>
-    <label>移動（違うエリア）<span><input type="number" id="sDiff" min="0" max="60" value="${S.diff}"> 分</span></label>
+    <label>歩く速さ<select id="sPace"><option value="1">ふつう</option><option value="1.3">ゆっくり（1.3倍）</option><option value="1.6">かなりゆっくり（1.6倍）</option></select></label>
     <h4>時間指定の時刻（チケットと違えば直す）</h4>
     ${fixed.map((i) => `<label><span>${i.days[0] === 'd4' ? '11/4' : '11/5'} ${esc(short(i))}</span><input type="time" data-time="${i.id}" value="${S.times[i.id] || i.time}"></label>`).join('')}
     <h4>記録を消す</h4>
@@ -885,7 +910,8 @@ function renderSettings() {
   $('sTime').onchange = (e) => upd(() => { S.fixTime = e.target.value; });
   $('sTimeClear').onclick = () => { $('sTime').value = ''; upd(() => { S.fixTime = ''; }); };
   $('sSame').onchange = (e) => upd(() => { S.same = Math.max(0, +e.target.value || 0); });
-  $('sDiff').onchange = (e) => upd(() => { S.diff = Math.max(0, +e.target.value || 0); });
+  $('sPace').value = String(S.pace || 1);
+  $('sPace').onchange = (e) => upd(() => { S.pace = +e.target.value || 1; });
   for (const inp of document.querySelectorAll('[data-time]')) inp.onchange = (e) => upd(() => { if (e.target.value) S.times[e.target.dataset.time] = e.target.value; });
   $('sResetTrial').onclick = () => { if (confirm('お試しの記録を消しますか？')) { LS.del(K.trial); render(); } };
   $('sResetReal').onclick = () => { if (confirm('本番の記録（済・休止・手入力）を消しますか？\n元に戻せません。')) { LS.del(K.state); render(); } };
