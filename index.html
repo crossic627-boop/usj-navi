@@ -42,7 +42,9 @@ a { color: var(--accent); }
 #clock small { font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 4px; }
 #fresh { font-size: 14px; font-weight: 700; color: var(--muted); border: 1.5px solid var(--line); border-radius: 999px; padding: 1px 10px; }
 #fresh.old { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
-#trial { width: 100%; background: var(--hl); color: var(--hl-fg); border-radius: 8px; padding: 3px 10px; font-size: 14px; font-weight: 700; }
+#trial { width: 100%; background: var(--hl); color: var(--hl-fg); border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#trial .btn { flex-shrink: 0; background: var(--bg); color: var(--fg); }
 #trial:empty { display: none; }
 
 /* 2. 次はここ */
@@ -222,7 +224,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-10d';
+const APP_VERSION = '2026-10-10e';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -231,7 +233,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
-const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {} };
+const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {}, trialLive: false };
 let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
 S.times = S.times || {};
 const saveS = () => LS.set(K.settings, S);
@@ -269,7 +271,7 @@ function getCtx() {
   const day = DAYS[dayKey];
   let now;
   if (S.fixTime) { now = toMin(S.fixTime); trial = true; }
-  else if (trial) now = toMin(day.start);
+  else if (trial) now = S.trialLive ? Math.floor(real.min) : toMin(day.start); // 今の待ちで試すときは今の時刻で
   else now = Math.floor(real.min);
   return { real, day, dayKey, trial, now, start: toMin(day.start), end: toMin(day.end) };
 }
@@ -341,7 +343,7 @@ function waitOf(i, st, useEst) {
   return { wait: i.est, src: '目安' };
 }
 // useEst（お試し・翌日の予測）のときは、目安の待ちで計算し、今の休止情報も使わない
-function buildEnv(c, useEst = c.trial) {
+function buildEnv(c, useEst = c.trial && !S.trialLive) {
   const st = loadState(c.trial);
   const items = ITEMS.filter((i) => i.days.includes(c.dayKey));
   const paused = new Map();
@@ -352,7 +354,7 @@ function buildEnv(c, useEst = c.trial) {
     w[i.id] = waitOf(i, st, useEst);
   }
   const age = W.updatedAt ? Math.max(0, (Date.now() - W.updatedAt) / 60000) : 120;
-  return { c, st, items, paused, w, age, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
+  return { c, st, items, paused, w, age, useEst, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
 }
 
 /* ============ 確率（待ち時間のぶれを見込んだ目安） ============ */
@@ -488,7 +490,9 @@ function render() {
     $('fresh').textContent = `自動更新：${jstHM(W.updatedAt)}時点（${ago < 1 ? 'たった今' : dur(ago) + '前'}）`;
     $('fresh').className = ago >= 20 ? 'old' : '';
   } else { $('fresh').textContent = '自動更新：データなし'; $('fresh').className = 'old'; }
-  $('trial').textContent = c.trial ? 'お試し表示（待ちは目安で計算。「済」は本番に残りません）' : '';
+  $('trial').innerHTML = c.trial
+    ? `<div>お試し表示：待ちは<b>${S.trialLive ? '今の待ち' : '目安'}</b>で計算（「済」は本番に残りません）</div>
+       <button class="btn small" data-act="trialLive">${S.trialLive ? '目安で試す' : '今の待ちで試す'}</button>` : '';
   $('src').textContent = `${W.source ? `データ：${W.source}・` : ''}版 ${APP_VERSION}`;
 
   // 時間指定を15分過ぎても「済」でないもの
@@ -648,7 +652,7 @@ function renderSim(env, t0) {
   const rows = tl.map((x) => x.free
     ? `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div class="free">休憩・写真・移動</div>`
     : `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div>${esc(x.item.name)}${x.at != null ? `<span class="note">（${fmt(x.at)}指定）</span>` : x.wait ? `<span class="note">（待ち${x.wait}分）</span>` : ''}</div>`).join('');
-  $('sim').innerHTML = `<div class="note">${env.c.trial ? '目安の待ち時間で計算した予測です（お試し表示）。' : '今の待ち時間がずっと続くと仮定した予測です。'}</div>
+  $('sim').innerHTML = `<div class="note">${env.useEst ? '目安の待ち時間で計算した予測です（お試し表示）。' : '今の待ち時間がずっと続くと仮定した予測です。'}</div>
     <div class="tl" style="margin-top:8px">${rows || '<div></div><div class="note">予定なし</div>'}<div class="t">${env.c.day.end}</div><div>${esc(env.c.day.endText)}</div></div>
     ${moved.length ? `<h4 style="margin:14px 0 4px">11/5に回すもの</h4><ul class="rules">${moved.map((i) => `<li>${esc(i.name)}</li>`).join('')}</ul>` : ''}
     <h4 style="margin:14px 0 4px">このままだと${span}入らない</h4>
@@ -723,6 +727,8 @@ document.addEventListener('click', (e) => {
       if (v.trim() === '' || isNaN(n)) delete st.overrides[id];
       else st.overrides[id] = { wait: Math.max(0, n), at: Date.now() };
     });
+  } else if (act === 'trialLive') {
+    S.trialLive = !S.trialLive; saveS(); render();
   } else if (act === 'notify') {
     enableNotify();
   }
