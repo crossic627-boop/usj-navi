@@ -97,6 +97,16 @@ a { color: var(--accent); }
 #countdown.now .chips span { background: transparent; border-color: var(--alarm-fg); }
 #notifyHint { margin-top: 8px; }
 
+/* このまま行くと：結論の1行 */
+#verdict { margin-top: 12px; padding: 10px 14px; border-radius: 14px; border: 2px solid var(--line); font-size: 16px; cursor: pointer; }
+#verdict:empty { display: none; }
+#verdict.good { border-color: var(--ok); }
+#verdict.good b { color: var(--ok); }
+#verdict.bad { border-color: var(--warn); background: var(--warn-bg); }
+#verdict.bad b { color: var(--warn); }
+#verdict ul { margin: 6px 0 0; padding-left: 1.2em; font-weight: 700; }
+#verdict .vs { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
 /* 折りたたみ */
 details { margin-top: 12px; border: 2px solid var(--line); border-radius: 14px; }
 summary { list-style: none; padding: 14px 16px; font-weight: 700; font-size: 18px; min-height: 52px; display: flex; justify-content: space-between; align-items: center; }
@@ -154,6 +164,7 @@ footer a { font-weight: 700; }
   <section id="countdown"></section>
   <div id="overdue"></div>
   <section id="next" class="card" aria-live="polite"></section>
+  <section id="verdict" role="button" tabindex="0"></section>
 
   <details id="dList"><summary>待ち時間一覧・手直し</summary><div id="list"></div></details>
   <details id="dSim"><summary>このまま行くと</summary><div id="sim"></div></details>
@@ -211,7 +222,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-10c';
+const APP_VERSION = '2026-10-10d';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -319,21 +330,27 @@ function isPaused(i, st) {
   return false;
 }
 // 今の待ち時間。手入力は、それより新しい自動データが来るまで優先
-function waitOf(i, st) {
+// useEst：お試し表示では、当日らしい「目安の待ち」で計算する（夜や別の日の待ち時間は参考にならないため）
+function waitOf(i, st, useEst) {
   if (i.type !== 'standby' && i.type !== 'pass') return { wait: 0, src: null };
   const o = st.overrides[i.id];
   const r = i.qt ? W.rides[i.qt] : null;
   if (o && (i.type === 'pass' || !r || !r.lu || o.at > r.lu)) return { wait: o.wait, src: '手入力' };
   if (i.type === 'pass') return { wait: i.est, src: 'パス' };
-  if (r && r.open !== false && typeof r.wait === 'number') return { wait: r.wait, src: '自動' };
+  if (!useEst && r && r.open !== false && typeof r.wait === 'number') return { wait: r.wait, src: '自動' };
   return { wait: i.est, src: '目安' };
 }
-function buildEnv(c) {
+// useEst（お試し・翌日の予測）のときは、目安の待ちで計算し、今の休止情報も使わない
+function buildEnv(c, useEst = c.trial) {
   const st = loadState(c.trial);
   const items = ITEMS.filter((i) => i.days.includes(c.dayKey));
   const paused = new Map();
   const w = {};
-  for (const i of items) { const p = isPaused(i, st); if (p) paused.set(i.id, p); w[i.id] = waitOf(i, st); }
+  for (const i of items) {
+    const p = useEst ? (st.paused[i.id] ? 'manual' : false) : isPaused(i, st);
+    if (p) paused.set(i.id, p);
+    w[i.id] = waitOf(i, st, useEst);
+  }
   const age = W.updatedAt ? Math.max(0, (Date.now() - W.updatedAt) / 60000) : 120;
   return { c, st, items, paused, w, age, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
 }
@@ -471,7 +488,7 @@ function render() {
     $('fresh').textContent = `自動更新：${jstHM(W.updatedAt)}時点（${ago < 1 ? 'たった今' : dur(ago) + '前'}）`;
     $('fresh').className = ago >= 20 ? 'old' : '';
   } else { $('fresh').textContent = '自動更新：データなし'; $('fresh').className = 'old'; }
-  $('trial').textContent = c.trial ? 'お試し表示（「済」などは本番に残りません）' : '';
+  $('trial').textContent = c.trial ? 'お試し表示（待ちは目安で計算。「済」は本番に残りません）' : '';
   $('src').textContent = `${W.source ? `データ：${W.source}・` : ''}版 ${APP_VERSION}`;
 
   // 時間指定を15分過ぎても「済」でないもの
@@ -586,16 +603,57 @@ function renderList(env) {
   }).join('');
 }
 
+// 入らない「優先の高いもの」があるとき、優先の低い予定を1つ削れば入るかを計算し直す
+function suggestCuts(env, t0, sim) {
+  const out = [];
+  const want = sim.left.filter((i) => i.type !== 'fixed' && i.pri).sort((a, b) => b.pri - a.pri);
+  const planned = sim.tl.filter((x) => x.item && x.item.type !== 'fixed' && x.item.pri).map((x) => x.item);
+  for (const w of want) {
+    const cuts = planned.filter((p) => p.pri < w.pri && !out.some((o) => o.cut === p)).sort((a, b) => a.pri - b.pri);
+    for (const p of cuts) {
+      const sim2 = simulate(Object.assign({}, env, { done: new Set([...env.done, p.id]) }), t0);
+      if (sim2.tl.some((x) => x.item && x.item.id === w.id)) { out.push({ cut: p, gain: w }); break; }
+    }
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+
 function renderSim(env, t0) {
-  if (lastCtx.now >= env.c.end) { $('sim').innerHTML = '<div class="note">今日はおしまいです。</div>'; return; }
-  const { tl, left } = simulate(env, t0);
+  if (lastCtx.now >= env.c.end) { $('sim').innerHTML = '<div class="note">今日はおしまいです。</div>'; $('verdict').innerHTML = ''; return; }
+  const sim = simulate(env, t0);
+  const { tl } = sim;
+  let left = sim.left, moved = [], cuts = suggestCuts(env, t0, sim);
+  // 11/4 のときは 11/5 まで続けて計算する（両日のものは 11/5 に回せるため）
+  if (env.c.dayKey === 'd4') {
+    moved = sim.left.filter((i) => i.days.includes('d5'));
+    const d5 = DAYS.d5;
+    const c5 = Object.assign({}, env.c, { dayKey: 'd5', day: d5, start: toMin(d5.start), end: toMin(d5.end) });
+    const env5 = buildEnv(c5, true);
+    env5.done = new Set([...env.done, ...tl.filter((x) => x.item).map((x) => x.item.id)]);
+    env5.area = d5.startArea;
+    const sim5 = simulate(env5, c5.start);
+    left = [...sim.left.filter((i) => !i.days.includes('d5')), ...sim5.left];
+    cuts = [...cuts.filter((x) => !x.gain.days.includes('d5')), ...suggestCuts(env5, c5.start, sim5)].slice(0, 2);
+  }
+  const dayOf = (i) => env.c.dayKey === 'd4' && !env.items.includes(i) ? '11/5の' : '';
+  const cutHtml = cuts.map((x) => `<li>${dayOf(x.cut)}${esc(short(x.cut))}（優先${PRI_LABEL[x.cut.pri]}）を削れば、${esc(short(x.gain))}（優先${PRI_LABEL[x.gain.pri]}）が入る見込み</li>`).join('');
+  const span = env.c.dayKey === 'd4' ? '2日間で' : '';
+  const movedHtml = moved.length ? `<div class="vs">11/4に入らない ${moved.map((i) => esc(short(i))).join('、')} は11/5に回す</div>` : '';
+  const v = $('verdict');
+  v.className = left.length ? 'bad' : 'good';
+  v.innerHTML = (left.length
+    ? `<b>⚠ このままだと${span}入らない：${left.map((i) => esc(short(i))).join('、')}</b>${cutHtml ? `<ul>${cutHtml}</ul>` : '<div class="vs">優先度の低いものから外れています。ほかを削っても入らない見込み</div>'}`
+    : `<b>✅ ${span}予定どおり全部入る見込み</b>`) + movedHtml + '<div class="vs">タップで「このまま行くと」を表示</div>';
   const rows = tl.map((x) => x.free
     ? `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div class="free">休憩・写真・移動</div>`
     : `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div>${esc(x.item.name)}${x.at != null ? `<span class="note">（${fmt(x.at)}指定）</span>` : x.wait ? `<span class="note">（待ち${x.wait}分）</span>` : ''}</div>`).join('');
-  $('sim').innerHTML = `<div class="note">今の待ち時間がずっと続くと仮定した予測です。</div>
+  $('sim').innerHTML = `<div class="note">${env.c.trial ? '目安の待ち時間で計算した予測です（お試し表示）。' : '今の待ち時間がずっと続くと仮定した予測です。'}</div>
     <div class="tl" style="margin-top:8px">${rows || '<div></div><div class="note">予定なし</div>'}<div class="t">${env.c.day.end}</div><div>${esc(env.c.day.endText)}</div></div>
-    <h4 style="margin:14px 0 4px">このままだと入らない</h4>
-    ${left.length ? '<ul class="rules">' + left.map((i) => `<li>${esc(i.name)}${env.w[i.id].wait ? `（待ち${env.w[i.id].wait}分）` : ''}</li>`).join('') + '</ul>' : '<div class="note">全部入る見込みです 🎉</div>'}
+    ${moved.length ? `<h4 style="margin:14px 0 4px">11/5に回すもの</h4><ul class="rules">${moved.map((i) => `<li>${esc(i.name)}</li>`).join('')}</ul>` : ''}
+    <h4 style="margin:14px 0 4px">このままだと${span}入らない</h4>
+    ${left.length ? '<ul class="rules">' + left.map((i) => `<li>${esc(i.name)}${i.type === 'standby' ? `（待ち${env.w[i.id] ? env.w[i.id].wait : i.est}分）` : ''}${i.pri ? `・優先${PRI_LABEL[i.pri]}` : ''}</li>`).join('') + '</ul>' : '<div class="note">全部入る見込みです 🎉</div>'}
+    ${cutHtml ? `<h4 style="margin:14px 0 4px">削るなら</h4><ul class="rules">${cutHtml}</ul>` : ''}
     ${S.tired ? '<div class="note">疲れたモード中：優先度「低」は外しています。</div>' : ''}`;
 }
 
@@ -638,6 +696,8 @@ function mutate(fn) {
   render();
   return () => { saveState(c.trial, JSON.parse(before)); render(); };
 }
+
+$('verdict').addEventListener('click', () => { $('dSim').open = true; $('dSim').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]');
