@@ -94,6 +94,7 @@ a { color: var(--accent); }
 .tl2 em { font-style: normal; font-size: 14px; color: var(--muted); white-space: nowrap; }
 .tl2 li.fx { font-weight: 700; }
 .tl2 li.fx em { color: var(--warn); font-size: 16px; font-weight: 900; }
+.tl2 i.pass { font-style: normal; font-size: 13px; font-weight: 800; color: var(--pass); border: 1.5px solid var(--pass); border-radius: 6px; padding: 0 5px; }
 .tl2 li.free span, .tl2 li.free time { color: var(--muted); font-weight: 600; font-size: 15px; }
 .tl2 li.end { border-bottom: 0; color: var(--muted); }
 #plan .verdict { margin: 10px 0 0; font-size: 16px; font-weight: 800; }
@@ -223,7 +224,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12c';
+const APP_VERSION = '2026-10-12d';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -605,14 +606,14 @@ function render() {
   if (r.kind === 'go') {
     const i = r.item;
     const tag = i.type === 'pass' ? '<span class="tag pass">パス</span>' : '';
-    const what = isRide(i) ? `待ち${r.wait}分` : `${i.dur}分くらい`;
+    const what = i.type === 'pass' ? 'パスで乗る' : isRide(i) ? `待ち${r.wait}分` : `${i.dur}分くらい`;
     h = `<p class="lead">${lead}</p><h2>${tag}${esc(i.name)}</h2>
       <p class="facts">${what}<span class="dot">・</span><b>${fmt(r.finish)}</b>ごろ終わる</p>
       <p class="why">${esc(reasonOf(r, env))}</p>
       ${risk(r.ok, r.nf ? `${fmt(r.nf.time)}の${name(r.nf.i)}` : '退園')}
       <button class="big" data-act="done" data-id="${i.id}">終わった</button>
       ${r.picked ? `<button class="link" data-act="unpick">おすすめに戻す</button>` : r.alts.length ? `<button class="link" data-act="alts">${showAlts ? 'ほかの候補を閉じる' : 'ちがうのにする ›'}</button>` : ''}
-      ${showAlts && !r.picked ? `<ul class="alts">${r.alts.map((a) => `<li><span class="an">${name(a.item)}<small>${isRide(a.item) ? `待ち${a.wait}分・` : ''}${fmt(a.finish)}ごろ終わる${a.share >= 5 ? `・おすすめ度${a.share}%` : ''}</small></span>
+      ${showAlts && !r.picked ? `<ul class="alts">${r.alts.map((a) => `<li><span class="an">${name(a.item)}<small>${a.item.type === 'pass' ? 'パス・' : isRide(a.item) ? `待ち${a.wait}分・` : ''}${fmt(a.finish)}ごろ終わる${a.share >= 5 ? `・おすすめ度${a.share}%` : ''}</small></span>
         <button data-act="pick" data-id="${a.item.id}">これにする</button></li>`).join('')}</ul>` : ''}`;
   } else if (r.kind === 'fixed') {
     const late = t > r.time, go = t >= r.depart;
@@ -632,26 +633,15 @@ function render() {
   }
   $('now').innerHTML = h;
 
-  // いちばん上：時間指定の帯。次の時間指定を大きく、このあとの分を小さく。出発の15分前から赤
+  // 上の赤い帯：別のものをしている間に、時間指定へ出発する時刻が近づいたときだけ出す（予定表で見られるので普段は出さない）
   const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedEnd(i) >= c.now)
     .sort((a, b) => fixedTime(a) - fixedTime(b));
-  // 「いま」がその時間指定そのものなら、帯にはその次を出す
-  const list = r.kind === 'fixed' ? upcoming.filter((i) => i !== r.item) : upcoming;
-  const nf = list[0];
+  const nf = upcoming[0];
   let bar = '';
-  if (c.now >= c.end) bar = '';
-  else if (nf) {
-    const f = { i: nf, time: fixedTime(nf) };
-    const from = r.kind === 'fixed' ? r.item.area : env.area;
-    const dep = departAt(f, from);
-    const hot = r.kind !== 'fixed' && c.now >= dep - 15;
-    const rest = list.slice(1).map((i) => `<span>${fmt(fixedTime(i))} ${name(i)}</span>`).join('');
-    bar = `<div class="fixbar ${hot ? 'hot' : ''}">
-      <div class="fb1"><span class="fbt">🔒 ${fmt(f.time)}${nf.until ? `<small>〜${fmt(fixedEnd(nf))}</small>` : ''}</span><span class="fbn">${name(nf)}</span></div>
-      <div class="fb2">${r.kind === 'fixed' ? `${esc(short(r.item))}のあと、${fmt(dep)}に出発` : c.now >= dep ? '今すぐ出発！' : `${fmt(dep)}に出発（あと${dur(dep - c.now)}）`}</div>
-      ${rest ? `<div class="fb3"><i>このあと</i>${rest}</div>` : ''}</div>`;
-  } else if (upcoming.length === 0) {
-    bar = `<div class="fixbar"><div class="fb2">今日の時間指定はすべて終わり。${esc(c.day.endText)}</div></div>`;
+  if (nf && c.now < c.end && r.kind === 'go') {
+    const f = { i: nf, time: fixedTime(nf) }, dep = departAt(f, env.area);
+    if (c.now >= dep - 15) bar = `<div class="fixbar hot"><div class="fb1"><span class="fbt">🔒 ${fmt(f.time)}</span><span class="fbn">${name(nf)}</span></div>
+      <div class="fb2">${c.now >= dep ? '今すぐ出発！' : `${fmt(dep)}までに出発（あと${dur(dep - c.now)}）`}</div></div>`;
   }
   $('alert').innerHTML = bar;
   if (!notify.on && !c.trial) $('alert').innerHTML += `<button class="link" data-act="notify">🔔 時間指定の前に音で知らせる</button>`;
@@ -730,8 +720,8 @@ function renderPlan(env, t0, now) {
   const li = rows.map((x) => x.free
     ? `<li class="free"><time>${fmt(x.from)}</time><span>休憩・写真</span></li>`
     : x.at != null
-      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b></span><em>🔒${fmt(x.at)}</em></li>`
-      : `<li><time>${fmt(x.from)}</time><span>${name(x.item)}</span>${x.wait ? `<em>待ち${x.wait}分</em>` : ''}</li>`).join('');
+      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b></span><em><i class="pass">パス</i> 🔒${fmt(x.at)}</em></li>`
+      : `<li><time>${fmt(x.from)}</time><span>${name(x.item)}</span>${x.item.type === 'pass' ? '<em><i class="pass">パス</i></em>' : x.wait ? `<em>待ち${x.wait}分</em>` : ''}</li>`).join('');
   const span = env.c.dayKey === 'd4' ? '2日間で' : '';
   const verdict = left.length
     ? `<p class="verdict bad">⚠ このままだと${span}入らない：${left.map(name).join('、')}</p>
