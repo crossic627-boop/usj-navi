@@ -47,7 +47,19 @@ a { color: var(--accent); }
 #trial button { min-height: 34px; border: 0; background: transparent; color: var(--accent); font-weight: 800; font-size: 12px; text-decoration: underline; }
 
 /* 出発が近いときの赤い帯 */
-.alert { margin-top: 10px; padding: 12px 14px; border-radius: 14px; background: var(--alarm); color: var(--alarm-fg); font-size: 18px; font-weight: 900; }
+.fixbar { margin-top: 8px; padding: 10px 14px; border-radius: 16px; border: 2.5px solid var(--warn); }
+.fixbar .fb1 { display: flex; align-items: baseline; gap: 8px; }
+.fixbar .fbt { font-size: 24px; font-weight: 900; color: var(--warn); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fixbar .fbn { flex: 1; min-width: 0; font-size: 19px; font-weight: 800; }
+.fixbar .fbl { font-size: 15px; font-weight: 800; white-space: nowrap; }
+.fixbar .fb2 { font-size: 15px; font-weight: 700; color: var(--muted); }
+.fixbar .fb3 { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; align-items: center; }
+.fixbar .fb3 i { font-style: normal; font-size: 12px; font-weight: 800; color: var(--muted); margin-right: 2px; }
+.fixbar .fb3 span { font-size: 13px; font-weight: 700; border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; white-space: nowrap; }
+.fixbar.hot { background: var(--alarm); border-color: var(--alarm); color: var(--alarm-fg); }
+.fixbar.hot .fbt, .fixbar.hot .fb2, .fixbar.hot .fb3 i { color: var(--alarm-fg); }
+.fixbar.hot .fb2 { font-size: 18px; font-weight: 900; }
+.fixbar.hot .fb3 span { border-color: var(--alarm-fg); }
 .link { display: inline-block; min-height: 44px; border: 0; background: transparent; color: var(--accent); font-size: 15px; font-weight: 800; padding: 0; }
 
 /* いま（主役） */
@@ -210,7 +222,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-11c';
+const APP_VERSION = '2026-10-12a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -550,8 +562,8 @@ function render() {
       <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
   } else if (r.kind === 'move') {
     h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
-      <p class="facts"><b>${fmt(r.depart)}</b>に出発 → ${name(r.item)}（🔒${fmt(r.nf.time)}）</p>
-      <p class="why">今から並べるものは、時間指定までに終わりません。</p>`;
+      <p class="facts"><b>${fmt(r.depart)}</b>まで</p>
+      <p class="why">今から並ぶと、上の時間指定に間に合いません。</p>`;
   } else if (r.kind === 'wait') {
     h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
       <p class="facts"><b>${fmt(r.until)}</b>に動き出す → ${name(r.item)}（${r.item.after}から）</p>`;
@@ -560,16 +572,28 @@ function render() {
   }
   $('now').innerHTML = h;
 
-  // 出発が近いときだけ、上に赤い帯
+  // いちばん上：時間指定の帯。次の時間指定を大きく、このあとの分を小さく。出発の15分前から赤
   const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedTime(i) + 15 >= c.now)
     .sort((a, b) => fixedTime(a) - fixedTime(b));
-  const nf = upcoming[0];
-  let alert = '';
-  if (nf && c.now < c.end && r.kind === 'go') { // 「いま」が移動・休憩のときはカードに出ているので出さない
-    const f = { i: nf, time: fixedTime(nf) }, dep = departAt(f, env.area);
-    if (c.now >= dep - 15) alert = `<div class="alert">${c.now >= dep ? '今すぐ出発' : `${fmt(dep)}までに出発（あと${dur(dep - c.now)}）`} → ${name(nf)} 🔒${fmt(f.time)}</div>`;
+  // 「いま」がその時間指定そのものなら、帯にはその次を出す
+  const list = r.kind === 'fixed' ? upcoming.filter((i) => i !== r.item) : upcoming;
+  const nf = list[0];
+  let bar = '';
+  if (c.now >= c.end) bar = '';
+  else if (nf) {
+    const f = { i: nf, time: fixedTime(nf) };
+    const from = r.kind === 'fixed' ? r.item.area : env.area;
+    const dep = departAt(f, from);
+    const hot = r.kind !== 'fixed' && c.now >= dep - 15;
+    const rest = list.slice(1).map((i) => `<span>${fmt(fixedTime(i))} ${name(i)}</span>`).join('');
+    bar = `<div class="fixbar ${hot ? 'hot' : ''}">
+      <div class="fb1"><span class="fbt">🔒 ${fmt(f.time)}</span><span class="fbn">${name(nf)}</span></div>
+      <div class="fb2">${r.kind === 'fixed' ? `${esc(short(r.item))}のあと、${fmt(dep)}に出発` : c.now >= dep ? '今すぐ出発！' : `${fmt(dep)}に出発（あと${dur(dep - c.now)}）`}</div>
+      ${rest ? `<div class="fb3"><i>このあと</i>${rest}</div>` : ''}</div>`;
+  } else if (upcoming.length === 0) {
+    bar = `<div class="fixbar"><div class="fb2">今日の時間指定はすべて終わり。${esc(c.day.endText)}</div></div>`;
   }
-  $('alert').innerHTML = alert;
+  $('alert').innerHTML = bar;
   if (!notify.on && !c.trial) $('alert').innerHTML += `<button class="link" data-act="notify">🔔 時間指定の前に音で知らせる</button>`;
 
   renderList(env);
