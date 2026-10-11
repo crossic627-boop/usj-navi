@@ -49,6 +49,7 @@ a { color: var(--accent); }
 /* 出発が近いときの赤い帯 */
 .fixbar { margin-top: 8px; padding: 10px 14px; border-radius: 16px; border: 2.5px solid var(--warn); }
 .fixbar .fb1 { display: flex; align-items: baseline; gap: 8px; }
+.fixbar .fbt small { font-size: 15px; font-weight: 800; }
 .fixbar .fbt { font-size: 24px; font-weight: 900; color: var(--warn); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .fixbar .fbn { flex: 1; min-width: 0; font-size: 19px; font-weight: 800; }
 .fixbar .fbl { font-size: 15px; font-weight: 800; white-space: nowrap; }
@@ -197,23 +198,23 @@ const DAYS = {
 // area が null のもの（食事・休憩など）は「近くで済ませる」扱い（移動は同じエリアの時間）
 const ITEMS = [
   { id: 'sadako',  name: '貞子', days: ['d4'], type: 'pass', dur: 15, est: 10, pri: 3, qt: 12324, area: 'ハリウッド' },
-  { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', dur: 30, area: 'ハリウッド' },
+  { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', until: '16:40', dur: 30, area: 'ハリウッド' },
   { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', chip: 'ハリドリ', days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
   { id: 'dinner4', name: '夕食（軽め）', days: ['d4'], type: 'meal', after: '17:00', by: '18:30', dur: 30, pri: 3, area: null },
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
-  { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
+  { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
-  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
+  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
-  { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'fixed', time: '11:00', dur: 30, qt: 12065, area: 'ハリー・ポッター' },
+  { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
-  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', days: ['d5'], type: 'fixed', time: '12:30', dur: 20, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
-  { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', dur: 30, qt: 12061, area: 'ニンテンドー' },
-  { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', dur: 20, qt: 14402, area: 'ニンテンドー' },
+  { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
+  { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'photo',   name: '写真・グッズ・USJ土産', chip: '写真・グッズ', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
   { id: 'dinner5', name: '夕食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 40, pri: 3, area: null },
-  { id: 'mi',      name: 'ミッション・インポッシブル', chip: 'ミッション', days: ['d5'], type: 'fixed', time: '18:00', dur: 30, area: 'ニューヨーク' },
+  { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
@@ -222,7 +223,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12a';
+const APP_VERSION = '2026-10-12b';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -252,6 +253,7 @@ const jstHM = (ms) => { const d = new Date(ms + 9 * 3600e3); return `${d.getUTCH
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const short = (i) => i.short || i.name;
 const fixedTime = (i) => toMin(S.times[i.id] || i.time);
+const fixedEnd = (i) => fixedTime(i) + (i.until ? toMin(i.until) - toMin(i.time) : 15);
 // エリア同士の歩く時間（分）。隣どうしだけ書き、離れたエリアは一番近い道順の合計で計算する。
 // 出典: usjhack.com「USJエリア最新版まとめ」の入口からの所要時間と隣接関係をもとにした目安
 const WALK = [
@@ -418,7 +420,7 @@ function plan(t, area, done, env, pick) {
   const end = env.c.end;
   const pool = eligible(env, done);
   const fixed = pool.filter((i) => i.type === 'fixed').map((i) => ({ i, time: fixedTime(i) }))
-    .filter((f) => t <= f.time + 15).sort((a, b) => a.time - b.time);
+    .filter((f) => t <= fixedEnd(f.i)).sort((a, b) => a.time - b.time);
   const nf = fixed[0] || null;
   if (nf && t >= departAt(nf, area) && !(pick && pick !== nf.i.id)) {
     const tr = travel(area, nf.i.area);
@@ -484,7 +486,7 @@ function simulate(env, t0) {
     done.add(r.item.id);
     if (r.item.area) area = r.item.area;
   }
-  const left = eligible(env, done).filter((i) => !(i.type === 'fixed' && fixedTime(i) + 15 < t0));
+  const left = eligible(env, done).filter((i) => !(i.type === 'fixed' && fixedEnd(i) < t0));
   return { tl, left, done };
 }
 
@@ -530,7 +532,7 @@ function render() {
   $('src').textContent = `${W.source ? `データ：${W.source}・` : ''}版 ${APP_VERSION}`;
 
   // 時間指定を15分過ぎても「済」でないもの
-  const overdue = c.now >= c.end ? [] : env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && c.now > fixedTime(i) + 15);
+  const overdue = c.now >= c.end ? [] : env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && c.now > fixedEnd(i));
   $('overdue').innerHTML = overdue.map((i) => `
     <div class="ask"><p>${esc(i.name)}（${fmt(fixedTime(i))}）は済んだ？</p>
     <div class="row2"><button class="btn primary" data-act="done" data-id="${i.id}">済にする</button>
@@ -573,7 +575,7 @@ function render() {
   $('now').innerHTML = h;
 
   // いちばん上：時間指定の帯。次の時間指定を大きく、このあとの分を小さく。出発の15分前から赤
-  const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedTime(i) + 15 >= c.now)
+  const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedEnd(i) >= c.now)
     .sort((a, b) => fixedTime(a) - fixedTime(b));
   // 「いま」がその時間指定そのものなら、帯にはその次を出す
   const list = r.kind === 'fixed' ? upcoming.filter((i) => i !== r.item) : upcoming;
@@ -587,7 +589,7 @@ function render() {
     const hot = r.kind !== 'fixed' && c.now >= dep - 15;
     const rest = list.slice(1).map((i) => `<span>${fmt(fixedTime(i))} ${name(i)}</span>`).join('');
     bar = `<div class="fixbar ${hot ? 'hot' : ''}">
-      <div class="fb1"><span class="fbt">🔒 ${fmt(f.time)}</span><span class="fbn">${name(nf)}</span></div>
+      <div class="fb1"><span class="fbt">🔒 ${fmt(f.time)}${nf.until ? `<small>〜${fmt(fixedEnd(nf))}</small>` : ''}</span><span class="fbn">${name(nf)}</span></div>
       <div class="fb2">${r.kind === 'fixed' ? `${esc(short(r.item))}のあと、${fmt(dep)}に出発` : c.now >= dep ? '今すぐ出発！' : `${fmt(dep)}に出発（あと${dur(dep - c.now)}）`}</div>
       ${rest ? `<div class="fb3"><i>このあと</i>${rest}</div>` : ''}</div>`;
   } else if (upcoming.length === 0) {
@@ -710,7 +712,7 @@ function renderRules(env) {
     </ul>
     <h4 style="margin:14px 0 4px">エリア間の歩く時間（目安）</h4>
     <div class="note">${WALK.map(([a, b, m]) => `${a}⇔${b} ${m}分`).join('　')}</div>
-    <div class="note">バイオハザードはハリウッド、ミッション・インポッシブルはニューヨークと仮定</div>`;
+    <div class="note">バイオハザードはハリウッド、ミニオン・ハチャメチャ・ミッションはミニオン・パークと仮定</div>`;
 }
 
 /* ============ 操作 ============ */
@@ -841,7 +843,7 @@ function renderNotify() {
     </div>
     <div class="note" style="margin-top:6px">お知らせ：<b>${notify.on ? 'オン' : notify.wanted ? 'オン（画面を一度タップすると音が有効）' : 'オフ'}</b>　画面オフ防止：<b>${!wl ? 'この端末では使えません' : notify.lock ? 'オン' : 'オフ'}</b></div>`;
   $('icsBtn').onclick = downloadICS;
-  $('nTest').onclick = () => showAlarm('テスト：ハリー・ポッター 11:00（あと20分）／移動10分');
+  $('nTest').onclick = () => showAlarm('テスト：マリオカート 15:30（あと20分）／移動10分');
   const off = $('nOff'); if (off) off.onclick = disableNotify;
 }
 
