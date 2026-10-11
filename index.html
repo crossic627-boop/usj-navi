@@ -36,48 +36,57 @@ body {
 button { font: inherit; color: inherit; cursor: pointer; }
 a { color: var(--accent); }
 
-/* 1. いちばん上：日付と更新時刻（小さく1行） */
-#top { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: space-between; }
+/* いちばん上：日付と時刻（小さく1行） */
+#top { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; justify-content: space-between; }
 #clock b { font-size: 18px; font-weight: 800; }
-#clock small { font-size: 14px; color: var(--muted); font-weight: 700; margin-left: 6px; }
-#fresh { font-size: 13px; font-weight: 600; color: var(--muted); }
-#fresh.old { color: var(--warn); font-weight: 800; }
-#trial { width: 100%; background: var(--hl); color: var(--hl-fg); border-radius: 8px; padding: 2px 4px 2px 10px; font-size: 13px; font-weight: 600;
-  display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-#trial button { flex-shrink: 0; min-height: 36px; border: 0; background: transparent; color: var(--accent); font-weight: 800; font-size: 13px; text-decoration: underline; padding: 0 6px; }
+#fresh { font-size: 12px; color: var(--muted); }
+#fresh.old { font-size: 14px; color: var(--warn); font-weight: 800; }
+#trial { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px;
+  font-size: 12px; color: var(--hl-fg); background: var(--hl); border-radius: 8px; padding: 0 4px 0 10px; }
 #trial:empty { display: none; }
+#trial button { min-height: 34px; border: 0; background: transparent; color: var(--accent); font-weight: 800; font-size: 12px; text-decoration: underline; }
 
-/* 2. 時間指定（1行で） */
-#countdown { margin-top: 10px; padding: 8px 12px; border-left: 5px solid var(--accent); background: var(--card); border-radius: 4px 12px 12px 4px; }
-#countdown .cr { display: flex; align-items: baseline; gap: 8px; }
-#countdown .ct { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
-#countdown .cn { font-size: 17px; font-weight: 800; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#countdown .cleft { font-size: 15px; font-weight: 800; white-space: nowrap; }
-#countdown .cm { font-size: 14px; font-weight: 600; color: var(--muted); }
-#countdown.now { background: var(--alarm); border-left-color: var(--alarm); color: var(--alarm-fg); }
-#countdown.now .cm { color: var(--alarm-fg); font-weight: 800; }
-#notifyHint { margin-top: 6px; }
-#notifyHint button { min-height: 36px; border: 0; background: transparent; color: var(--accent); font-weight: 800; font-size: 14px; text-decoration: underline; padding: 0; }
+/* 出発が近いときの赤い帯 */
+.alert { margin-top: 10px; padding: 12px 14px; border-radius: 14px; background: var(--alarm); color: var(--alarm-fg); font-size: 18px; font-weight: 900; }
+.link { display: inline-block; min-height: 44px; border: 0; background: transparent; color: var(--accent); font-size: 15px; font-weight: 800; padding: 0; }
 
-/* 3. 次はここ（主役） */
-.card { background: var(--card); border-radius: 20px; padding: 16px; margin-top: 12px; }
-#next .label { font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: .08em; }
-#next .name { font-size: 30px; font-weight: 800; line-height: 1.25; margin: 2px 0 8px; word-break: break-word; }
-#next .nums { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; font-size: 16px; font-weight: 700; }
-#next .nums b { font-size: 28px; font-weight: 900; font-variant-numeric: tabular-nums; }
-#next .why { margin-top: 6px; font-size: 15px; color: var(--muted); line-height: 1.45; }
-#next .why b { color: var(--accent); }
-#next .risk { margin-top: 6px; font-size: 15px; font-weight: 800; color: var(--warn); }
-#next .alts { margin-top: 12px; }
-#next .alt { display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: 1px solid var(--line); }
-#next .alt .an { flex: 1; min-width: 0; font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#next .alt .ap { font-size: 16px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
-#next .alt button { min-height: 40px; min-width: 48px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); font-size: 14px; font-weight: 700; }
+/* いま（主役） */
+.card { background: var(--card); border-radius: 22px; padding: 18px 18px 8px; margin-top: 12px; }
+#now .lead { margin: 0; font-size: 14px; font-weight: 800; color: var(--accent); letter-spacing: .08em; }
+#now h2 { margin: 2px 0 6px; font-size: 30px; font-weight: 800; line-height: 1.25; word-break: break-word; }
+#now .facts { margin: 0; font-size: 18px; font-weight: 700; }
+#now .facts b { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+#now .dot { color: var(--muted); margin: 0 2px; }
+#now .why { margin: 6px 0 0; font-size: 15px; color: var(--muted); line-height: 1.45; }
+#now .why.hot { color: var(--warn); font-size: 20px; font-weight: 900; }
+#now .risk { margin: 6px 0 0; font-size: 15px; font-weight: 800; color: var(--warn); }
+#now .link { display: block; margin: 2px auto 0; }
+#now .alts { list-style: none; margin: 0 0 10px; padding: 0; }
+#now .alts li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+#now .alts .an { flex: 1; min-width: 0; font-size: 17px; font-weight: 800; }
+#now .alts small { display: block; font-size: 13px; font-weight: 600; color: var(--muted); }
+#now .alts button { min-height: 44px; border-radius: 12px; border: 2px solid var(--accent); background: var(--bg); color: var(--accent); font-size: 15px; font-weight: 800; padding: 0 12px; white-space: nowrap; }
 .big { display: block; width: 100%; min-height: 64px; margin-top: 14px; border: 0; border-radius: 16px;
   background: var(--accent); color: var(--accent-fg); font-size: 24px; font-weight: 800; }
 .big:active { transform: scale(.98); }
-.tag { display: inline-block; font-size: 13px; font-weight: 700; border: 1.5px solid currentColor; border-radius: 6px; padding: 0 6px; margin-right: 6px; vertical-align: 4px; }
-.tag.pass { color: var(--pass); } .tag.fixed { color: var(--warn); } .tag.ok { color: var(--ok); }
+.tag { display: inline-block; font-size: 13px; font-weight: 700; border: 1.5px solid currentColor; border-radius: 6px; padding: 0 6px; margin: 0 6px; vertical-align: 3px; letter-spacing: 0; }
+.tag.pass { color: var(--pass); margin-left: 0; } .tag.fixed { color: var(--warn); } .tag.ok { color: var(--ok); }
+
+/* このあと：乗り換え案内のような予定表 */
+#plan h3 { margin: 22px 0 6px; font-size: 14px; font-weight: 800; color: var(--muted); letter-spacing: .08em; }
+.tl2 { list-style: none; margin: 0; padding: 0; }
+.tl2 li { display: flex; align-items: baseline; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 17px; }
+.tl2 time { flex: 0 0 3.2em; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+.tl2 span { flex: 1; min-width: 0; }
+.tl2 em { font-style: normal; font-size: 14px; color: var(--muted); white-space: nowrap; }
+.tl2 li.fx { font-weight: 700; }
+.tl2 li.fx em { color: var(--warn); font-size: 16px; font-weight: 900; }
+.tl2 li.free span, .tl2 li.free time { color: var(--muted); font-weight: 600; font-size: 15px; }
+.tl2 li.end { border-bottom: 0; color: var(--muted); }
+#plan .verdict { margin: 10px 0 0; font-size: 16px; font-weight: 800; }
+#plan .verdict.good { color: var(--ok); }
+#plan .verdict.bad { color: var(--warn); }
+#plan .note { margin: 4px 0 0; }
 
 /* 時間指定の確認 */
 .ask { background: var(--warn-bg); border: 2px solid var(--warn); border-radius: 14px; padding: 12px; margin-top: 12px; }
@@ -86,13 +95,6 @@ a { color: var(--accent); }
 .btn { min-height: 48px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); font-weight: 700; padding: 6px 10px; }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .btn.small { min-height: 44px; font-size: 15px; padding: 4px 10px; }
-
-/* 4. 予定どおりか（1行） */
-#verdict { margin-top: 10px; padding: 10px 4px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
-#verdict:empty { display: none; }
-#verdict.good { color: var(--ok); }
-#verdict.bad { color: var(--warn); }
-#verdict::after { content: "›"; color: var(--muted); font-size: 20px; line-height: 1; }
 
 /* 折りたたみ */
 details { margin-top: 10px; border: 1.5px solid var(--line); border-radius: 14px; }
@@ -145,18 +147,17 @@ footer a { font-weight: 700; }
   <header id="top">
     <span id="clock"></span>
     <span id="fresh"></span>
-    <div id="trial"></div>
   </header>
-
-  <section id="countdown"></section>
+  <div id="trial"></div>
+  <div id="alert"></div>
   <div id="overdue"></div>
-  <section id="next" class="card" aria-live="polite"></section>
-  <section id="verdict" role="button" tabindex="0"></section>
 
-  <details id="dList"><summary>待ち時間一覧・手直し</summary><div id="list"></div></details>
-  <details id="dSim"><summary>📋 見通し（このまま行くと）</summary><div id="sim"></div></details>
+  <section id="now" class="card" aria-live="polite"></section>
+  <section id="plan"></section>
+
+  <details id="dList"><summary>待ち時間を見る・直す</summary><div id="list"></div></details>
   <details id="dNotify"><summary>お知らせ・カレンダー</summary><div id="notify"></div></details>
-  <details id="dRules"><summary>判断ルール</summary><div id="rules"></div></details>
+  <details id="dRules"><summary>決め方のルール</summary><div id="rules"></div></details>
   <details id="dSet"><summary>設定</summary><div id="settings"></div></details>
 
   <footer>
@@ -178,7 +179,7 @@ footer a { font-weight: 700; }
 /* ============ 予定データ ============ */
 const DAYS = {
   d4: { key: 'd4', date: '2026-11-04', label: '11/4（水）', start: '15:00', end: '20:00', endText: '20:00 退園 → シティウォークの551へ', startArea: 'ハリウッド' },
-  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:15', end: '21:30', endText: '21:30 出口へ（ホテル門限23時）', startArea: 'ハリウッド' },
+  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:15', open: '07:45', end: '21:30', endText: '21:30 出口へ（ホテル門限23時）', startArea: 'ハリウッド' },
 };
 // type: fixed=時間指定 / pass=エクスプレス / standby=スタンバイ / event=イベント / meal=食事 / rest=休憩
 // area が null のもの（食事・休憩など）は「近くで済ませる」扱い（移動は同じエリアの時間）
@@ -189,27 +190,27 @@ const ITEMS = [
   { id: 'dinner4', name: '夕食（軽め）', days: ['d4'], type: 'meal', after: '17:00', by: '18:30', dur: 30, pri: 3, area: null },
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
-  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
+  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
-  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', days: ['d4', 'd5'], type: 'standby', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
+  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
   { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'fixed', time: '11:00', dur: 30, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', days: ['d5'], type: 'fixed', time: '12:30', dur: 20, qt: 7092, area: 'ジュラシック・パーク' },
-  { id: 'sing',    name: 'SING ON TOUR', days: ['d4', 'd5'], type: 'standby', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
+  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'photo',   name: '写真・グッズ・USJ土産', chip: '写真・グッズ', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
   { id: 'dinner5', name: '夕食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 40, pri: 3, area: null },
   { id: 'mi',      name: 'ミッション・インポッシブル', chip: 'ミッション', days: ['d5'], type: 'fixed', time: '18:00', dur: 30, area: 'ニューヨーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
-  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', days: ['d4', 'd5'], type: 'standby', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
+  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-11b';
+const APP_VERSION = '2026-10-11c';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -218,11 +219,11 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
-const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {}, trialLive: false, pace: 1 };
+const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {}, trialLive: false, pace: 1, gap: 5 };
 let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
 S.times = S.times || {};
 const saveS = () => LS.set(K.settings, S);
-const blankState = () => ({ status: {}, at: {}, paused: {}, overrides: {}, area: {} });
+const blankState = () => ({ status: {}, at: {}, paused: {}, overrides: {}, area: {}, chosen: null });
 function loadState(trial) { return Object.assign(blankState(), LS.get(trial ? K.trial : K.state, {})); }
 function saveState(trial, st) { LS.set(trial ? K.trial : K.state, st); }
 
@@ -280,7 +281,7 @@ function getCtx() {
   if (S.fixTime) { now = toMin(S.fixTime); trial = true; }
   else if (trial) now = S.trialLive ? Math.floor(real.min) : toMin(day.start); // 今の待ちで試すときは今の時刻で
   else now = Math.floor(real.min);
-  return { real, day, dayKey, trial, now, start: toMin(day.start), end: toMin(day.end) };
+  return { real, day, dayKey, trial, now, arrive: toMin(day.start), start: toMin(day.open || day.start), end: toMin(day.end) };
 }
 
 /* ============ 待ち時間データ ============ */
@@ -361,7 +362,9 @@ function buildEnv(c, useEst = c.trial && !S.trialLive) {
     w[i.id] = waitOf(i, st, useEst);
   }
   const age = W.updatedAt ? Math.max(0, (Date.now() - W.updatedAt) / 60000) : 120;
-  return { c, st, items, paused, w, age, useEst, done: new Set(Object.keys(st.status)), area: st.area[c.dayKey] || c.day.startArea };
+  const done = new Set(Object.keys(st.status));
+  const chosen = st.chosen && !done.has(st.chosen) && items.some((i) => i.id === st.chosen) ? st.chosen : null;
+  return { c, st, items, paused, w, age, useEst, done, chosen, area: st.area[c.dayKey] || c.day.startArea };
 }
 
 /* ============ 確率（待ち時間のぶれを見込んだ目安） ============ */
@@ -384,6 +387,7 @@ const pct = (p) => Math.min(99, Math.max(1, Math.round(p * 100)));
 // 上位3つに、合計100%になるよう「おすすめ度」を配る
 function shares(list) {
   const top = list.slice(0, 3);
+  if (!top.length) return top;
   const m = Math.max(...top.map((x) => x.score));
   const e = top.map((x) => Math.exp((x.score - m) / 12));
   const sum = e.reduce((a, b) => a + b, 0);
@@ -393,36 +397,43 @@ function shares(list) {
 }
 const eligible = (env, done) => env.items.filter((i) => !done.has(i.id) && !env.paused.has(i.id) && !(S.tired && i.pri === 1));
 
-// 時刻 t・場所 area から「次にすること」を1つ決める
-function plan(t, area, done, env) {
+// 時間指定に向けて出発する時刻 ＝ 時刻 − 移動 − 余裕5分（画面のどこでもこの1つの時刻を使う）
+const BUF = 5;
+const departAt = (f, area) => f.time - travel(area, f.i.area) - BUF;
+
+// 時刻 t・場所 area から「次にすること」を1つ決める。pick：利用者が「ちがうのにする」で選んだもの
+function plan(t, area, done, env, pick) {
   const end = env.c.end;
   const pool = eligible(env, done);
   const fixed = pool.filter((i) => i.type === 'fixed').map((i) => ({ i, time: fixedTime(i) }))
     .filter((f) => t <= f.time + 15).sort((a, b) => a.time - b.time);
   const nf = fixed[0] || null;
-  if (nf) {
+  if (nf && t >= departAt(nf, area) && !(pick && pick !== nf.i.id)) {
     const tr = travel(area, nf.i.area);
-    if (t >= nf.time - tr - 5) {
-      const start = Math.max(t + tr, nf.time);
-      const ok = phi((nf.time - (t + tr)) / 2.5); // 移動のぶれだけ
-      return { kind: 'fixed', item: nf.i, time: nf.time, travel: tr, moveAt: nf.time - tr, start, finish: start + nf.i.dur, nf, ok };
-    }
+    const start = Math.max(t + tr, nf.time);
+    const ok = phi((nf.time - (t + tr)) / 2.5); // 移動のぶれだけ
+    return { kind: 'fixed', item: nf.i, time: nf.time, travel: tr, depart: departAt(nf, area), start, finish: start + nf.i.dur, nf, ok };
   }
+  // まだ食べていない食事。ほかのものに並んで、食事が締め切りに間に合わなくなるなら選ばない
+  const meals = pool.filter((m) => m.type === 'meal' && toMin(m.by) > t && Math.max(t, toMin(m.after)) + +S.same + m.dur <= toMin(m.by));
   const cands = []; let next = null;
   for (const i of pool) {
     if (i.type === 'fixed') continue;
     const tr = travel(area, i.area);
-    const wait = env.w[i.id].wait;
+    // 開園直後は、まだ待ち時間データが届かないことが多い。最初に行くものは 10/11 の実績（開園時15分）に近い数字で見積もる
+    const openRush = i.first === env.c.dayKey && t < env.c.start + 30;
+    const wait = openRush && env.w[i.id].src === '目安' ? i.firstWait : env.w[i.id].wait;
     const cost = tr + wait + i.dur;
-    // 空き時間の終わり ＝ 時間指定の時刻 − 移動 − 5分
-    const limit = nf ? nf.time - travel(i.area || area, nf.i.area) - 5 : end;
+    // 空き時間の終わり ＝ 時間指定に向けて出発する時刻
+    const limit = nf ? nf.time - travel(i.area || area, nf.i.area) - BUF : end;
     if (i.after && t + tr < toMin(i.after)) {
       const a = toMin(i.after);
       if (a + wait + i.dur <= limit && (!next || a - tr < next.at)) next = { at: a - tr, item: i };
       continue;
     }
     const finish = t + cost;
-    if (finish > limit) continue;
+    if (finish > limit && i.id !== pick) continue;
+    if (i.type !== 'meal' && i.id !== pick && meals.some((m) => Math.max(finish, toMin(m.after)) + +S.same + m.dur > toMin(m.by))) continue;
     // 間に合う確率：本当の締め切り（時間指定の時刻 − 移動）までに終わる見込み
     const src = env.w[i.id].src;
     const deadline = nf ? nf.time - travel(i.area || area, nf.i.area) : end;
@@ -430,42 +441,46 @@ function plan(t, area, done, env) {
     let score = (i.pri || 1) * 60 + ((i.est ?? wait) - wait) * 0.8 - cost * 0.5;
     if (i.type === 'pass') score += 25;
     if (i.type === 'meal' && toMin(i.by) - finish <= 30) score += 80; // 食べ終わる時刻が締め切りの30分前を過ぎるなら急ぐ
+    if (openRush) score += 500; // 開園直後にまっすぐ行くもの
+    if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
     cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok });
   }
   cands.sort((a, b) => b.score - a.score);
-  if (cands.length) { const top = shares(cands); return Object.assign({ kind: 'go', alts: top.slice(1), nf }, top[0]); }
-  const moveAt = nf ? nf.time - travel(area, nf.i.area) - 5 : null;
-  if (next && next.at < end && (!nf || next.at < moveAt)) return { kind: 'wait', until: next.at, item: next.item, nf };
-  if (nf) return { kind: 'move', item: nf.i, nf, moveAt };
+  if (cands.length) { const top = shares(cands.filter((x) => x.item.id !== pick)); const me = cands[0].item.id === pick || !top.length ? cands[0] : top[0];
+    return Object.assign({ kind: 'go', alts: cands.filter((x) => x !== me).slice(0, 3), nf, picked: me.item.id === pick }, me); }
+  if (next && next.at < end && (!nf || next.at < departAt(nf, area))) return { kind: 'wait', until: next.at, item: next.item, nf };
+  if (nf) return { kind: 'move', item: nf.i, nf, depart: departAt(nf, area) };
   return { kind: 'end' };
 }
 
-// 今の待ち時間が続くとして、退園までを予測
+// 今の待ち時間が続くとして、退園までを予測（1つ終わるごとに S.gap 分の余裕をとる）
 function simulate(env, t0) {
   const end = env.c.end;
   let t = t0, area = env.area;
   const done = new Set(env.done), tl = [];
   for (let k = 0; k < 80 && t < end; k++) {
-    const r = plan(t, area, done, env);
-    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time });
+    const r = plan(t, area, done, env, k === 0 ? env.chosen : null);
+    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time, depart: Math.min(t, r.depart) });
     else if (r.kind === 'go') tl.push({ from: t, to: r.finish, item: r.item, wait: r.wait });
     else if (r.kind === 'wait' || r.kind === 'move') {
-      const nt = Math.max(t + 1, r.kind === 'wait' ? r.until : r.moveAt);
+      const nt = Math.max(t + 1, r.kind === 'wait' ? r.until : r.depart);
       if (nt - t >= 5) tl.push({ from: t, to: nt, free: true });
       t = nt; continue;
     } else break;
-    t = r.finish;
+    t = r.finish + (+S.gap || 0);
     done.add(r.item.id);
     if (r.item.area) area = r.item.area;
   }
   const left = eligible(env, done).filter((i) => !(i.type === 'fixed' && fixedTime(i) + 15 < t0));
-  return { tl, left };
+  return { tl, left, done };
 }
 
 function reasonOf(r, env) {
   const i = r.item, p = [];
-  if (i.type === 'pass') p.push('エクスプレス・パスで短い待ち');
+  if (r.picked) p.push('あなたが選んだもの');
+  else if (i.first === env.c.dayKey && r.finish - r.cost < env.c.start + 30) p.push('開園直後がいちばん空く（10/11は開園時15分→20分後110分）');
+  else if (i.type === 'pass') p.push('エクスプレス・パスで短い待ち');
   else if (i.type === 'meal') p.push(toMin(i.by) - r.finish < 0 ? `${i.by}の目標を過ぎそう。早めに食事` : `${i.by}までに食事`);
   else if (i.type === 'event') p.push(`${i.after}から開催中`);
   else if (i.type === 'rest') p.push('空き時間に');
@@ -489,17 +504,17 @@ function render() {
   const env = buildEnv(c);
   lastEnv = env; lastCtx = c;
   const t = Math.max(c.now, c.start);
+  const name = (i) => esc(i.chip || short(i));
 
-  // 1. 上の小さい表示
-  $('clock').innerHTML = `<b>${c.day.label} ${fmt(c.now)}</b>${c.now < c.start ? '<small>入園前</small>' : ''}`;
+  // いちばん上：日付と時刻。更新時刻は古いときだけ目立たせる
+  $('clock').innerHTML = `<b>${c.day.label} ${fmt(c.now)}</b>`;
   if (W.updatedAt) {
     const ago = Math.max(0, Math.round((Date.now() - W.updatedAt) / 60000));
-    $('fresh').textContent = `自動更新：${jstHM(W.updatedAt)}時点（${ago < 1 ? 'たった今' : dur(ago) + '前'}）`;
+    $('fresh').textContent = ago >= 20 ? `⚠ 待ち時間が${dur(ago)}前のまま` : `自動更新：${jstHM(W.updatedAt)}時点（${ago < 1 ? 'たった今' : dur(ago) + '前'}）`;
     $('fresh').className = ago >= 20 ? 'old' : '';
-  } else { $('fresh').textContent = '自動更新：データなし'; $('fresh').className = 'old'; }
+  } else { $('fresh').textContent = '⚠ 待ち時間データなし'; $('fresh').className = 'old'; }
   $('trial').innerHTML = c.trial
-    ? `<span>お試し表示（待ちは${S.trialLive ? '今の数字' : '目安'}で計算）</span>
-       <button data-act="trialLive">${S.trialLive ? '目安で試す' : '今の待ちで試す'}</button>` : '';
+    ? `<span>お試し表示（待ちは${S.trialLive ? '今の数字' : '目安'}で計算）</span><button data-act="trialLive">${S.trialLive ? '目安で試す' : '今の待ちで試す'}</button>` : '';
   $('src').textContent = `${W.source ? `データ：${W.source}・` : ''}版 ${APP_VERSION}`;
 
   // 時間指定を15分過ぎても「済」でないもの
@@ -509,71 +524,56 @@ function render() {
     <div class="row2"><button class="btn primary" data-act="done" data-id="${i.id}">済にする</button>
     <button class="btn" data-act="skip" data-id="${i.id}">あきらめる</button></div></div>`).join('');
 
-  // 2. 次はここ
-  const r = c.now >= c.end ? { kind: 'end' } : plan(t, env.area, env.done, env);
-  let h = '';
-  const lead = c.now < c.start ? `👉 入園したらまず（${c.day.start}〜）` : '👉 今やること';
+  // いま
+  const r = c.now >= c.end ? { kind: 'end' } : plan(t, env.area, env.done, env, env.chosen);
   const isRide = (x) => x.type === 'standby' || x.type === 'pass';
-  // 「間に合う」は危ないときだけ出す
-  const risk = (ok, what) => ok < 0.8 ? `<div class="risk">⚠ ${what}に間に合わないかも（見込み${pct(ok)}%）</div>` : '';
+  const risk = (ok, what) => ok < 0.8 ? `<p class="risk">⚠ ${what}に間に合わないかも</p>` : '';
+  const lead = c.now < c.start ? `開園したら（${fmt(c.start)}ごろ）まっすぐ` : 'いま';
+  let h = '';
   if (r.kind === 'go') {
     const i = r.item;
     const tag = i.type === 'pass' ? '<span class="tag pass">パス</span>' : '';
-    const nextWord = r.nf ? `${fmt(r.nf.time)}の${esc(short(r.nf.i))}` : '退園';
-    h = `<div class="label">${lead}</div><div class="name">${tag}${esc(i.name)}</div>
-      <div class="nums">${isRide(i) ? `<span>待ち <b>${r.wait}</b>分</span>` : `<span><b>${i.dur}</b>分くらい</span>`}<span><b>${fmt(r.finish)}</b>に終わる</span></div>
-      <div class="why">${esc(reasonOf(r, env))}。おすすめ度 <b>${r.share}%</b></div>
-      ${risk(r.ok, nextWord)}
+    const what = isRide(i) ? `待ち${r.wait}分` : `${i.dur}分くらい`;
+    h = `<p class="lead">${lead}</p><h2>${tag}${esc(i.name)}</h2>
+      <p class="facts">${what}<span class="dot">・</span><b>${fmt(r.finish)}</b>ごろ終わる</p>
+      <p class="why">${esc(reasonOf(r, env))}</p>
+      ${risk(r.ok, r.nf ? `${fmt(r.nf.time)}の${name(r.nf.i)}` : '退園')}
       <button class="big" data-act="done" data-id="${i.id}">終わった</button>
-      ${r.alts.length ? `<div class="alts">${r.alts.map((a) => `<div class="alt">
-        <span class="an">ほかなら：${esc(a.item.chip || short(a.item))}</span><span class="ap">${a.share}%</span>
-        <button data-act="done" data-id="${a.item.id}">済</button></div>`).join('')}</div>` : ''}`;
+      ${r.picked ? `<button class="link" data-act="unpick">おすすめに戻す</button>` : r.alts.length ? `<button class="link" data-act="alts">${showAlts ? 'ほかの候補を閉じる' : 'ちがうのにする ›'}</button>` : ''}
+      ${showAlts && !r.picked ? `<ul class="alts">${r.alts.map((a) => `<li><span class="an">${name(a.item)}<small>${isRide(a.item) ? `待ち${a.wait}分・` : ''}${fmt(a.finish)}ごろ終わる${a.share >= 5 ? `・おすすめ度${a.share}%` : ''}</small></span>
+        <button data-act="pick" data-id="${a.item.id}">これにする</button></li>`).join('')}</ul>` : ''}`;
   } else if (r.kind === 'fixed') {
-    const late = t > r.time;
-    h = `<div class="label">${lead}</div><div class="name"><span class="tag fixed">時間指定</span>${esc(r.item.name)}</div>
-      <div class="nums"><span><b>${fmt(r.time)}</b>から</span><span><b>${fmt(r.finish)}</b>に終わる</span></div>
-      <div class="why">${late ? '時刻を過ぎています。急いで！' : t >= r.moveAt ? `今すぐ移動（移動${r.travel}分）` : `${fmt(r.moveAt)}に移動を始める（移動${r.travel}分）`}</div>
-      ${risk(r.ok, fmt(r.time))}
+    const late = t > r.time, go = t >= r.depart;
+    h = `<p class="lead">${lead}<span class="tag fixed">🔒 時間指定</span></p><h2>${esc(r.item.name)}</h2>
+      <p class="facts"><b>${fmt(r.time)}</b>から<span class="dot">・</span>移動${r.travel}分</p>
+      <p class="why ${go ? 'hot' : ''}">${late ? '時刻を過ぎています。急いで！' : go ? '今すぐ出発！' : `${fmt(r.depart)}に出発`}</p>
       <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
   } else if (r.kind === 'move') {
-    h = `<div class="label">${lead}</div><div class="name">${esc(short(r.item))}へ移動</div>
-      <div class="why">今から入れるものはありません。空き時間は休憩・写真に。${fmt(r.nf.time - travel(env.area, r.item.area))}までに出発。</div>`;
+    h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
+      <p class="facts"><b>${fmt(r.depart)}</b>に出発 → ${name(r.item)}（🔒${fmt(r.nf.time)}）</p>
+      <p class="why">今から並べるものは、時間指定までに終わりません。</p>`;
   } else if (r.kind === 'wait') {
-    h = `<div class="label">${lead}</div><div class="name">休憩・写真</div>
-      <div class="why">${esc(r.item.name)}は${r.item.after}から。${fmt(r.until)}ごろ動き出す。</div>`;
+    h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
+      <p class="facts"><b>${fmt(r.until)}</b>に動き出す → ${name(r.item)}（${r.item.after}から）</p>`;
   } else {
-    h = `<div class="label">${c.now >= c.end ? '👉 退園時刻です' : '👉 今日の予定はここまで'}</div>
-      <div class="name">出口へ</div><div class="why">${esc(c.day.endText)}</div>`;
+    h = `<p class="lead">${c.now >= c.end ? '退園時刻です' : '今日の予定はここまで'}</p><h2>出口へ</h2><p class="why">${esc(c.day.endText)}</p>`;
   }
-  $('next').innerHTML = h;
+  $('now').innerHTML = h;
 
-  // 3. 時間指定のカウントダウン（いちばん上に表示）
+  // 出発が近いときだけ、上に赤い帯
   const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedTime(i) + 15 >= c.now)
     .sort((a, b) => fixedTime(a) - fixedTime(b));
-  const nextFixed = upcoming[0];
-  const cd = $('countdown');
-  const later = (list) => list.length ? `　このあと ${list.slice(0, 2).map((i) => `${fmt(fixedTime(i))} ${esc(i.chip || short(i))}`).join('・')}${list.length > 2 ? '…' : ''}` : '';
-  if (c.now >= c.end) {
-    cd.className = '';
-    cd.innerHTML = `<div class="cr"><span class="cn">⏰ 退園時刻です</span></div><div class="cm">${esc(c.day.endText)}</div>`;
-  } else if (nextFixed) {
-    const ft = fixedTime(nextFixed);
-    const tr = travel(env.area, nextFixed.area);
-    const moveAt = ft - tr;
-    const isNow = c.now >= moveAt;
-    cd.className = isNow ? 'now' : '';
-    cd.innerHTML = `<div class="cr"><span class="ct">⏰ ${fmt(ft)}</span><span class="cn">${esc(short(nextFixed))}</span>
-      <span class="cleft">${c.now >= ft ? '時刻です' : 'あと' + dur(ft - c.now)}</span></div>
-      <div class="cm">${isNow ? `今すぐ移動！（移動${tr}分）` : `${fmt(moveAt)}に移動`}${later(upcoming.slice(1))}</div>`;
-  } else {
-    cd.className = '';
-    cd.innerHTML = `<div class="cr"><span class="ct">⏰ ${c.day.end}</span><span class="cn">退園</span><span class="cleft">あと${dur(c.end - c.now)}</span></div>
-      <div class="cm">今日の時間指定はすべて終わり</div>`;
+  const nf = upcoming[0];
+  let alert = '';
+  if (nf && c.now < c.end && r.kind === 'go') { // 「いま」が移動・休憩のときはカードに出ているので出さない
+    const f = { i: nf, time: fixedTime(nf) }, dep = departAt(f, env.area);
+    if (c.now >= dep - 15) alert = `<div class="alert">${c.now >= dep ? '今すぐ出発' : `${fmt(dep)}までに出発（あと${dur(dep - c.now)}）`} → ${name(nf)} 🔒${fmt(f.time)}</div>`;
   }
-  if (!notify.on && !c.trial) cd.innerHTML += `<div id="notifyHint"><button data-act="notify">🔔 時間指定の前に音で知らせる</button></div>`;
+  $('alert').innerHTML = alert;
+  if (!notify.on && !c.trial) $('alert').innerHTML += `<button class="link" data-act="notify">🔔 時間指定の前に音で知らせる</button>`;
 
   renderList(env);
-  renderSim(env, t);
+  renderPlan(env, t, r);
   renderRules(env);
   renderNotify();
   checkAlarms(c, env);
@@ -609,7 +609,7 @@ function renderList(env) {
   }).join('');
 }
 
-// 入らない「優先の高いもの」があるとき、優先の低い予定を1つ削れば入るかを計算し直す
+/// 入らない「優先の高いもの」があるとき、優先の低い予定を1つ削れば入るかを計算し直す
 function suggestCuts(env, t0, sim) {
   const out = [];
   const want = sim.left.filter((i) => i.type !== 'fixed' && i.pri).sort((a, b) => b.pri - a.pri);
@@ -625,41 +625,39 @@ function suggestCuts(env, t0, sim) {
   return out;
 }
 
-function renderSim(env, t0) {
-  if (lastCtx.now >= env.c.end) { $('sim').innerHTML = '<div class="note">今日はおしまいです。</div>'; $('verdict').innerHTML = ''; return; }
+// 「このあと」：今日の残りを、乗り換え案内のように上から並べる
+function renderPlan(env, t0, now) {
+  const name = (i) => esc(i.chip || short(i));
+  if (lastCtx.now >= env.c.end) { $('plan').innerHTML = ''; return; }
   const sim = simulate(env, t0);
-  const { tl } = sim;
+  // 先頭は「いま」のカードと同じなので省く
+  const rows = sim.tl.slice(now.kind === 'end' ? 0 : 1).filter((x) => !x.free || x.to - x.from >= 10);
   let left = sim.left, moved = [], cuts = suggestCuts(env, t0, sim);
-  // 11/4 のときは 11/5 まで続けて計算する（両日のものは 11/5 に回せるため）
-  if (env.c.dayKey === 'd4') {
+  if (env.c.dayKey === 'd4') { // 11/4 は 11/5 まで続けて計算する（両日のものは 11/5 に回せるため）
     moved = sim.left.filter((i) => i.days.includes('d5'));
     const d5 = DAYS.d5;
-    const c5 = Object.assign({}, env.c, { dayKey: 'd5', day: d5, start: toMin(d5.start), end: toMin(d5.end) });
+    const c5 = Object.assign({}, env.c, { dayKey: 'd5', day: d5, start: toMin(d5.open || d5.start), end: toMin(d5.end) });
     const env5 = buildEnv(c5, true);
-    env5.done = new Set([...env.done, ...tl.filter((x) => x.item).map((x) => x.item.id)]);
-    env5.area = d5.startArea;
+    env5.done = new Set([...sim.done]); env5.area = d5.startArea; env5.chosen = null;
     const sim5 = simulate(env5, c5.start);
     left = [...sim.left.filter((i) => !i.days.includes('d5')), ...sim5.left];
     cuts = [...cuts.filter((x) => !x.gain.days.includes('d5')), ...suggestCuts(env5, c5.start, sim5)].slice(0, 2);
   }
-  const dayOf = (i) => env.c.dayKey === 'd4' && !env.items.includes(i) ? '11/5の' : '';
-  const cutHtml = cuts.map((x) => `<li>${dayOf(x.cut)}${esc(short(x.cut))}（優先${PRI_LABEL[x.cut.pri]}）を削れば、${esc(short(x.gain))}（優先${PRI_LABEL[x.gain.pri]}）が入る見込み</li>`).join('');
+  const li = rows.map((x) => x.free
+    ? `<li class="free"><time>${fmt(x.from)}</time><span>休憩・写真</span></li>`
+    : x.at != null
+      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b></span><em>🔒${fmt(x.at)}</em></li>`
+      : `<li><time>${fmt(x.from)}</time><span>${name(x.item)}</span>${x.wait ? `<em>待ち${x.wait}分</em>` : ''}</li>`).join('');
   const span = env.c.dayKey === 'd4' ? '2日間で' : '';
-  const movedHtml = moved.length ? `<div class="vs">11/4に入らない ${moved.map((i) => esc(short(i))).join('、')} は11/5に回す</div>` : '';
-  const v = $('verdict');
-  v.className = left.length ? 'bad' : 'good';
-  const names = left.length <= 2 ? `（${left.map((i) => esc(i.chip || short(i))).join('・')}）` : '';
-  v.innerHTML = `<span>📋 ${left.length ? `このままだと${span}${left.length}つ回れない${names}` : `このままなら${span}全部回れる`}</span>`;
-  const rows = tl.map((x) => x.free
-    ? `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div class="free">休憩・写真・移動</div>`
-    : `<div class="t">${fmt(x.from)}–${fmt(x.to)}</div><div>${esc(x.item.name)}${x.at != null ? `<span class="note">（${fmt(x.at)}指定）</span>` : x.wait ? `<span class="note">（待ち${x.wait}分）</span>` : ''}</div>`).join('');
-  $('sim').innerHTML = `<div class="note">${env.useEst ? '目安の待ち時間で計算した予測です（お試し表示）。' : '今の待ち時間がずっと続くと仮定した予測です。'}</div>
-    <div class="tl" style="margin-top:8px">${rows || '<div></div><div class="note">予定なし</div>'}<div class="t">${env.c.day.end}</div><div>${esc(env.c.day.endText)}</div></div>
-    ${moved.length ? `<h4 style="margin:14px 0 4px">11/5に回すもの</h4><ul class="rules">${moved.map((i) => `<li>${esc(i.name)}</li>`).join('')}</ul>` : ''}
-    <h4 style="margin:14px 0 4px">このままだと${span}入らない</h4>
-    ${left.length ? '<ul class="rules">' + left.map((i) => `<li>${esc(i.name)}${i.type === 'standby' ? `（待ち${env.w[i.id] ? env.w[i.id].wait : i.est}分）` : ''}${i.pri ? `・優先${PRI_LABEL[i.pri]}` : ''}</li>`).join('') + '</ul>' : '<div class="note">全部入る見込みです 🎉</div>'}
-    ${cutHtml ? `<h4 style="margin:14px 0 4px">削るなら</h4><ul class="rules">${cutHtml}</ul>` : ''}
-    ${S.tired ? '<div class="note">疲れたモード中：優先度「低」は外しています。</div>' : ''}`;
+  const verdict = left.length
+    ? `<p class="verdict bad">⚠ このままだと${span}入らない：${left.map(name).join('、')}</p>
+       ${cuts.map((x) => `<p class="note">→ ${name(x.cut)}を削れば、${name(x.gain)}が入る見込み</p>`).join('')}`
+    : `<p class="verdict good">✅ この流れなら${span}全部回れる</p>`;
+  $('plan').innerHTML = `<h3>このあと</h3><ol class="tl2">${li}
+      <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
+    ${verdict}
+    ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
+    <p class="note">${env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
 }
 
 function renderRules(env) {
@@ -672,7 +670,11 @@ function renderRules(env) {
     <li>21:30には出口へ</li></ul>
     <h4 style="margin:14px 0 4px">「次はここ」の決め方</h4>
     <ul class="rules note">
-      <li>次の時間指定までの空き時間（時刻 − 移動 − 5分）に終わるものだけが候補</li>
+      <li>時間指定に向けて出発する時刻 ＝ 時刻 − 移動 − 余裕5分。それまでに終わるものだけが候補</li>
+      <li>11/5は7:15に着いて、7:45ごろ開園として計算（公式は8:00、実際は7:30〜7:50の見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）</li>
+      <li>コナン・チェンソーマンは9:00から、SINGは10:30からとして計算（10/11の記録で最初に数字が出た時刻）</li>
+      <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
+      <li>予定表では、1つ終わるごとに${S.gap}分の余裕（トイレ・迷った時間）をみる</li>
       <li>かかる時間 ＝ 移動 ＋ 待ち ＋ 所要。移動は同じエリアなら${S.same}分、違うエリアは下の「歩く時間」の一番近い道順の合計${+S.pace > 1 ? `×${S.pace}（ゆっくり）` : ''}</li>
       <li>点数 ＝ 優先度（高3・中2・低1）×60 ＋（目安待ち − 今の待ち）×0.8 − かかる時間×0.5。パスは＋25、食事の締め切りまで30分以内（食べ終わる時刻で判定）なら＋80</li>
       <li>間に合う確率：待ち時間は表示どおりとは限らないので、ぶれ（待ちの3割くらい・最低5分。データが古いほど大きく）を見込んで、次の時間指定（なければ退園）に間に合う見込みを出す</li>
@@ -705,7 +707,7 @@ function mutate(fn) {
   return () => { saveState(c.trial, JSON.parse(before)); render(); };
 }
 
-$('verdict').addEventListener('click', () => { $('dSim').open = true; $('dSim').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+let showAlts = false; // 「ちがうのにする」を開いているか
 
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]');
@@ -713,11 +715,20 @@ document.addEventListener('click', (e) => {
   const id = b.dataset.id, act = b.dataset.act;
   const item = ITEMS.find((i) => i.id === id);
   if (act === 'done' || act === 'skip') {
+    showAlts = false;
     const undo = mutate((st, c) => {
       st.status[id] = act; st.at[id] = Date.now();
+      if (st.chosen === id) st.chosen = null;
       if (act === 'done' && item.area) st.area[c.dayKey] = item.area;
     });
     toast(`${short(item)}を${act === 'done' ? '済' : 'あきらめ'}にしました`, undo);
+  } else if (act === 'alts') {
+    showAlts = !showAlts; render();
+  } else if (act === 'pick') {
+    showAlts = false;
+    mutate((st) => { st.chosen = id; });
+  } else if (act === 'unpick') {
+    mutate((st) => { st.chosen = null; });
   } else if (act === 'undo') {
     mutate((st) => { delete st.status[id]; delete st.at[id]; });
   } else if (act === 'pause') {
