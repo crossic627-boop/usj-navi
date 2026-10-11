@@ -1,7 +1,7 @@
 {
  "source": "Powered by Queue-Times.com",
  "source_url": "https://queue-times.com/",
- "updated_at": "2026-10-11T13:35:18.000Z",
+ "updated_at": "2026-10-11T13:50:19.000Z",
  "rides": [
   {
    "id": 7063,
@@ -113,21 +113,21 @@
    "name": "Space Fantasy – The Ride",
    "is_open": false,
    "wait_time": 0,
-   "last_updated": "2026-10-11T13:35:18.000Z"
+   "last_updated": "2026-10-11T13:50:19.000Z"
   },
   {
    "id": 12083,
    "name": "Sesame Street 4-D Movie Magic™",
    "is_open": false,
    "wait_time": 0,
-   "last_updated": "2026-10-11T13:35:18.000Z"
+   "last_updated": "2026-10-11T13:50:19.000Z"
   },
   {
    "id": 12084,
    "name": "Shrek’s 4-D Adventure™",
    "is_open": false,
    "wait_time": 0,
-   "last_updated": "2026-10-11T13:35:18.000Z"
+   "last_updated": "2026-10-11T13:50:19.000Z"
   },
   {
    "id": 12091,
