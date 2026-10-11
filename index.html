@@ -10,6 +10,9 @@
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>USJナビ</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
 <style>
 :root {
   --bg: #ffffff; --fg: #0b0b0b; --muted: #444a52; --card: #f2f4f7; --line: #b9c0ca;
@@ -200,16 +203,16 @@ const DAYS = {
 const ITEMS = [
   { id: 'sadako',  name: '貞子', days: ['d4'], type: 'pass', dur: 15, est: 10, pri: 3, qt: 12324, area: 'ハリウッド' },
   { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', until: '16:40', dur: 30, area: 'ハリウッド' },
-  { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', chip: 'ハリドリ', days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
+  { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', chip: 'ハリドリ', outdoor: true, days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
   { id: 'dinner4', name: '夕食（軽め）', days: ['d4'], type: 'meal', after: '17:00', by: '18:30', dur: 30, pri: 3, area: null },
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
-  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
+  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
   { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
-  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
@@ -224,7 +227,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12d';
+const APP_VERSION = '2026-10-12f';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -332,6 +335,7 @@ async function checkUpdate() {
 async function refresh() {
   checkUpdate();
   loadStats();
+  loadWeather();
   let got = null, src = '';
   try { got = normalize(await getJSON(QT_URL, 6000)); src = 'Queue-Times 直接'; } catch {}
   if (!got || !Object.keys(got.rides).length) {
@@ -375,6 +379,27 @@ function profAt(prof, m) {
   return prof[prof.length - 1][1];
 }
 const round5 = (x) => Math.max(0, Math.round(x / 5) * 5);
+
+/* ============ 天気予報（Open-Meteo）。雨や強い風の時間は、屋外のコースターを避ける ============ */
+const PARK = { lat: 34.6654, lon: 135.4323 };
+let WX = LS.get('usjnavi.weather', null), wxAt = 0;
+async function loadWeather() {
+  if (Date.now() - wxAt < 60 * 60 * 1000) return; // 1時間に1回
+  try {
+    const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${PARK.lat}&longitude=${PARK.lon}&hourly=precipitation_probability,precipitation,wind_gusts_10m,weather_code&wind_speed_unit=ms&timezone=Asia%2FTokyo&forecast_days=16`, 8000);
+    const h = {};
+    j.hourly.time.forEach((x, k) => { h[x] = { p: j.hourly.precipitation_probability[k], mm: j.hourly.precipitation[k], g: j.hourly.wind_gusts_10m[k], code: j.hourly.weather_code[k] }; });
+    WX = { at: Date.now(), h }; wxAt = Date.now(); LS.set('usjnavi.weather', WX);
+  } catch {}
+}
+// その日のその時刻の天気。lv 2：止まる可能性が高い（突風15m/s・1時間2mm以上の雨・雷） 1：止まるかも（突風10m/s・0.5mm・降水確率60%以上）
+function wxAt_(date, m) {
+  const x = WX && WX.h[`${date}T${pad(Math.floor(m / 60))}:00`];
+  if (!x) return null;
+  const lv = x.g >= 15 || x.mm >= 2 || [95, 96, 99].includes(x.code) ? 2 : x.g >= 10 || x.mm >= 0.5 || x.p >= 60 ? 1 : 0;
+  return Object.assign({ lv }, x);
+}
+const wxWord = (x) => (x.g >= 10 ? '強い風' : '') + (x.g >= 10 && (x.mm >= 0.5 || x.p >= 60) ? '・' : '') + (x.mm >= 0.5 || x.p >= 60 || [95, 96, 99].includes(x.code) ? '雨' : '');
 
 /* ============ 判断の材料 ============ */
 function isPaused(i, st) {
@@ -509,10 +534,12 @@ function plan(t, area, done, env, pick) {
     let score = (i.pri || 1) * 60 + deal * 0.8 - cost * 0.5;
     if (i.type === 'pass') score += 25;
     if (i.type === 'meal' && toMin(i.by) - finish <= 30) score += 80; // 食べ終わる時刻が締め切りの30分前を過ぎるなら急ぐ
-    if (openRush) score += 500; // 開園直後にまっすぐ行くもの
+    const wx = i.outdoor ? wxAt_(env.c.day.date, t + tr + wait) : null;
+    if (openRush && !(wx && wx.lv === 2)) score += 500; // 開園直後にまっすぐ行くもの（大雨・強風の予報なら止まっている可能性が高いのでやめる）
+    if (wx && wx.lv) score -= wx.lv === 2 ? 150 : 40;
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
-    cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak });
+    cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak, wx });
   }
   cands.sort((a, b) => b.score - a.score);
   if (cands.length) { const top = shares(cands.filter((x) => x.item.id !== pick)); const me = cands[0].item.id === pick || !top.length ? cands[0] : top[0];
@@ -564,6 +591,7 @@ function reasonOf(r, env) {
     else if (d <= -5) p.push(`目安より${-d}分長いが、今入れる中ではいちばん良い`);
     else p.push('待ちは目安どおり');
   }
+  if (r.wx && r.wx.lv) p.push(`${wxWord(r.wx)}の予報。屋外なので止まるかも`);
   p.push(r.nf ? `${fmt(r.nf.time)}の${short(r.nf.i)}に間に合う` : `${env.c.day.end}の退園までに終わる`);
   return p.join('。');
 }
@@ -727,10 +755,20 @@ function renderPlan(env, t0, now) {
     ? `<p class="verdict bad">⚠ このままだと${span}入らない：${left.map(name).join('、')}</p>
        ${cuts.map((x) => `<p class="note">→ ${name(x.cut)}を削れば、${name(x.gain)}が入る見込み</p>`).join('')}`
     : `<p class="verdict good">✅ この流れなら${span}全部回れる</p>`;
+  // その日の天気のまとめ（雨・風の時間をまとめて出す）
+  let wxNote = '天気予報は、旅行の約2週間前（10/20ごろ）から反映されます。';
+  if (wxAt_(env.c.day.date, 12 * 60)) {
+    const bad = [];
+    for (let h = Math.floor(env.c.start / 60); h < Math.ceil(env.c.end / 60); h++) { const x = wxAt_(env.c.day.date, h * 60); if (x && x.lv) bad.push({ h, x }); }
+    wxNote = bad.length
+      ? `天気予報：${bad[0].h}時〜${bad[bad.length - 1].h + 1}時に${[...new Set(bad.map((b) => wxWord(b.x)))].join('・')}。屋外のコースターはその時間を避けて組んでいます。`
+      : '天気予報：大きな雨や風はなさそうです。';
+  }
   $('plan').innerHTML = `<h3>このあと</h3><ol class="tl2">${li}
       <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
     ${verdict}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
+    <p class="note">${wxNote}</p>
     <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
 }
 
@@ -750,6 +788,7 @@ function renderRules(env) {
       <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
       <li>待ち時間は、毎日の記録から「平日の30分ごとの待ち」を集計して予測。当日は、今の待ちが記録より多いか少ないかで補正（先の時刻ほど記録に近づける）</li>
       <li>「今並ぶのが得か」は、このあと1〜3時間の予測と比べる。後で長くなるものは今のうちに</li>
+      <li>天気予報（Open-Meteo）で雨や強い風の時間は、屋外のコースター（バックドロップ・ハリドリ・フライング）を避ける</li>
       <li>「いつも60分以上」なのに10分以下と出ているものは、止まっている・受付終了かもしれないので記録の数字で計算</li>
       <li>予定表では、1つ終わるごとに${S.gap}分の余裕（トイレ・迷った時間）をみる</li>
       <li>かかる時間 ＝ 移動 ＋ 待ち ＋ 所要。移動は同じエリアなら${S.same}分、違うエリアは下の「歩く時間」の一番近い道順の合計${+S.pace > 1 ? `×${S.pace}（ゆっくり）` : ''}</li>
@@ -1011,7 +1050,10 @@ if (cached) W = Object.assign(cached, { source: '保存データ' });
 renderSettings();
 render();
 loadStats().then(render);
+loadWeather().then(render);
 refresh();
+// 電波がなくても開けるように、ページとデータをスマホに保存する
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 setInterval(refresh, 3 * 60 * 1000); // 開いている間は3分おきに再取得
 setInterval(render, 20 * 1000);
 </script>
