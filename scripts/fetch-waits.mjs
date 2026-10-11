@@ -1,14 +1,20 @@
 // Queue-Times.com から USJ の待ち時間を取り、waits.json に保存する。
 // 中身が変わったときだけファイルを書き換える（GitHub Actions のコミットを減らすため）。
 // 使い方: node scripts/fetch-waits.mjs
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, appendFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 const SOURCE = 'https://queue-times.com/parks/284/queue_times.json';
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'waits.json');
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const OUT = path.join(ROOT, 'waits.json');
+const HISTORY = path.join(ROOT, 'history');
 
-export async function fetchWaits() {
+// 日本時間の日付（YYYY-MM-DD）
+const jstDate = (iso) => new Date(Date.parse(iso) + 9 * 3600e3).toISOString().slice(0, 10);
+
+// history: true のときは、新しくなったアトラクションの待ち時間を history/日付.jsonl に1行追記する（集計用）
+export async function fetchWaits({ history = false } = {}) {
   const res = await fetch(SOURCE, {
     headers: { 'User-Agent': 'usj-navi (personal trip helper)' },
     signal: AbortSignal.timeout(20000),
@@ -43,13 +49,23 @@ export async function fetchWaits() {
   try { old = await readFile(OUT, 'utf8'); } catch {}
   if (old === text) return { changed: false, data };
   await writeFile(OUT, text);
+  if (history) {
+    // 前回から last_updated が変わったものだけ記録する：[id, 待ち分, 運営中なら1, last_updated]
+    let prev = {};
+    try { for (const r of JSON.parse(old).rides) prev[r.id] = r.last_updated; } catch {}
+    const rows = rides.filter((r) => prev[r.id] !== r.last_updated).map((r) => [r.id, r.wait_time, r.is_open ? 1 : 0, r.last_updated]);
+    if (rows.length) {
+      await mkdir(HISTORY, { recursive: true });
+      await appendFile(path.join(HISTORY, jstDate(data.updated_at) + '.jsonl'), JSON.stringify(rows) + '\n');
+    }
+  }
   return { changed: true, data };
 }
 
 // 直接実行されたときだけ動く（dev-server.mjs から import されたときは動かない）
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const { changed, data } = await fetchWaits();
+    const { changed, data } = await fetchWaits({ history: true });
     const open = data.rides.filter((r) => r.is_open).length;
     console.log(`${changed ? '更新しました' : '変化なし'}: ${data.rides.length}件（運営中 ${open}件）データ時刻 ${data.updated_at}`);
   } catch (e) {

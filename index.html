@@ -223,7 +223,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12b';
+const APP_VERSION = '2026-10-12c';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -330,6 +330,7 @@ async function checkUpdate() {
 }
 async function refresh() {
   checkUpdate();
+  loadStats();
   let got = null, src = '';
   try { got = normalize(await getJSON(QT_URL, 6000)); src = 'Queue-Times 直接'; } catch {}
   if (!got || !Object.keys(got.rides).length) {
@@ -346,6 +347,33 @@ async function refresh() {
   }
   render();
 }
+
+/* ============ 時間帯ごとの予測（stats.json：毎日の記録を GitHub が集計したもの） ============ */
+let STATS = LS.get('usjnavi.stats', null), statsAt = 0;
+async function loadStats() {
+  if (Date.now() - statsAt < 30 * 60 * 1000) return; // 30分に1回で十分
+  try { STATS = await getJSON('./stats.json?t=' + Date.now(), 8000); statsAt = Date.now(); LS.set('usjnavi.stats', STATS); } catch {}
+}
+const statDays = (type) => (STATS && STATS.days[type] || []).length;
+// 旅行の日（平日）の「30分ごとの待ち」。平日の記録が2日分そろうまでは、休日の記録も軽く混ぜる
+function profileOf(qt) {
+  const r = STATS && qt && STATS.rides[qt];
+  if (!r) return null;
+  const sum = {};
+  const add = (src, weight) => { for (const [k, [w, n]] of Object.entries(src || {})) { const o = (sum[k] ??= { s: 0, n: 0 }); o.s += w * n * weight; o.n += n * weight; } };
+  add(r.weekday, 1);
+  if (statDays('weekday') < 2) add(r.holiday, 0.5);
+  const keys = Object.keys(sum).map(Number).sort((a, b) => a - b);
+  return keys.length ? keys.map((k) => [k + STATS.slotMinutes / 2, sum[k].s / sum[k].n]) : null;
+}
+// 時刻 m の予測（30分ごとの値の間をなめらかにつなぐ）
+function profAt(prof, m) {
+  if (!prof) return null;
+  if (m <= prof[0][0]) return prof[0][1];
+  for (let k = 1; k < prof.length; k++) if (m <= prof[k][0]) { const [a, wa] = prof[k - 1], [b, wb] = prof[k]; return wa + ((wb - wa) * (m - a)) / (b - a); }
+  return prof[prof.length - 1][1];
+}
+const round5 = (x) => Math.max(0, Math.round(x / 5) * 5);
 
 /* ============ 判断の材料 ============ */
 function isPaused(i, st) {
@@ -378,7 +406,25 @@ function buildEnv(c, useEst = c.trial && !S.trialLive) {
   const age = W.updatedAt ? Math.max(0, (Date.now() - W.updatedAt) / 60000) : 120;
   const done = new Set(Object.keys(st.status));
   const chosen = st.chosen && !done.has(st.chosen) && items.some((i) => i.id === st.chosen) ? st.chosen : null;
-  return { c, st, items, paused, w, age, useEst, done, chosen, area: st.area[c.dayKey] || c.day.startArea };
+  const nowT = Math.max(c.now, c.start);
+  const prof = {};
+  for (const i of items) if (i.type === 'standby') {
+    prof[i.id] = profileOf(i.qt);
+    // 「いつも60分以上」なのに10分以下と出ているときは、止まっている・受付終了の可能性が高い
+    const p0 = profAt(prof[i.id], nowT);
+    if (!useEst && w[i.id].src === '自動' && w[i.id].wait <= 10 && p0 >= 60) w[i.id].suspect = true;
+  }
+  // 時刻 t の待ちの予測。記録がなければ今の数字（または目安）のまま
+  const waitAt = (i, at) => {
+    const cur = w[i.id];
+    if (i.type !== 'standby' || !prof[i.id]) return cur.wait;
+    const base = profAt(prof[i.id], at);
+    if (useEst || cur.suspect || (cur.src !== '自動' && cur.src !== '手入力')) return round5(base);
+    // 今の数字が記録よりどれだけ多い／少ないか。先の時刻ほど、その差は記録の値に戻っていく
+    const ratio = Math.min(2, Math.max(0.5, cur.wait / Math.max(5, profAt(prof[i.id], nowT))));
+    return round5(base * (1 + (ratio - 1) * Math.exp(-(at - nowT) / 120)));
+  };
+  return { c, st, items, paused, w, age, useEst, done, chosen, nowT, prof, waitAt, area: st.area[c.dayKey] || c.day.startArea };
 }
 
 /* ============ 確率（待ち時間のぶれを見込んだ目安） ============ */
@@ -436,13 +482,14 @@ function plan(t, area, done, env, pick) {
     const tr = travel(area, i.area);
     // 開園直後は、まだ待ち時間データが届かないことが多い。最初に行くものは 10/11 の実績（開園時15分）に近い数字で見積もる
     const openRush = i.first === env.c.dayKey && t < env.c.start + 30;
-    const wait = openRush && env.w[i.id].src === '目安' ? i.firstWait : env.w[i.id].wait;
+    const live = !env.useEst && (env.w[i.id].src === '自動' || env.w[i.id].src === '手入力') && t === env.nowT;
+    const wait = openRush && !live ? i.firstWait : env.waitAt(i, t);
     const cost = tr + wait + i.dur;
     // 空き時間の終わり ＝ 時間指定に向けて出発する時刻
     const limit = nf ? nf.time - travel(i.area || area, nf.i.area) - BUF : end;
     if (i.after && t + tr < toMin(i.after)) {
       const a = toMin(i.after);
-      if (a + wait + i.dur <= limit && (!next || a - tr < next.at)) next = { at: a - tr, item: i };
+      if (a + env.waitAt(i, a) + i.dur <= limit && (!next || a - tr < next.at)) next = { at: a - tr, item: i };
       continue;
     }
     const finish = t + cost;
@@ -452,13 +499,19 @@ function plan(t, area, done, env, pick) {
     const src = env.w[i.id].src;
     const deadline = nf ? nf.time - travel(i.area || area, nf.i.area) : end;
     const ok = phi((deadline - finish) / spread(i, wait, src, env.age));
-    let score = (i.pri || 1) * 60 + ((i.est ?? wait) - wait) * 0.8 - cost * 0.5;
+    // 今並ぶのが得か：記録があれば「このあと1〜3時間の予測」と比べる（後で長くなるなら今のうちに）。なければ目安と比べる
+    let deal = (i.est ?? wait) - wait, peak = null;
+    if (env.prof[i.id] && !openRush) {
+      const later = [60, 120, 180].map((d) => t + d).filter((x) => x < end).map((x) => ({ t: x, w: env.waitAt(i, x) }));
+      if (later.length) { deal = later.reduce((s, x) => s + x.w, 0) / later.length - wait; peak = later.reduce((a, x) => (x.w > a.w ? x : a)); }
+    }
+    let score = (i.pri || 1) * 60 + deal * 0.8 - cost * 0.5;
     if (i.type === 'pass') score += 25;
     if (i.type === 'meal' && toMin(i.by) - finish <= 30) score += 80; // 食べ終わる時刻が締め切りの30分前を過ぎるなら急ぐ
     if (openRush) score += 500; // 開園直後にまっすぐ行くもの
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
-    cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok });
+    cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak });
   }
   cands.sort((a, b) => b.score - a.score);
   if (cands.length) { const top = shares(cands.filter((x) => x.item.id !== pick)); const me = cands[0].item.id === pick || !top.length ? cands[0] : top[0];
@@ -498,6 +551,11 @@ function reasonOf(r, env) {
   else if (i.type === 'meal') p.push(toMin(i.by) - r.finish < 0 ? `${i.by}の目標を過ぎそう。早めに食事` : `${i.by}までに食事`);
   else if (i.type === 'event') p.push(`${i.after}から開催中`);
   else if (i.type === 'rest') p.push('空き時間に');
+  else if (r.peak) {
+    if (r.deal >= 10) p.push(`今のうちに。${fmt(r.peak.t)}ごろは${r.peak.w}分になりそう`);
+    else if (r.deal <= -10) p.push('あとで短くなりそうだが、今入れる中ではいちばん良い');
+    else p.push('このあとも待ちはあまり変わらない見込み');
+  }
   else if (r.src === '目安') p.push('待ちは目安で計算');
   else {
     const d = i.est - r.wait;
@@ -528,7 +586,7 @@ function render() {
     $('fresh').className = ago >= 20 ? 'old' : '';
   } else { $('fresh').textContent = '⚠ 待ち時間データなし'; $('fresh').className = 'old'; }
   $('trial').innerHTML = c.trial
-    ? `<span>お試し表示（待ちは${S.trialLive ? '今の数字' : '目安'}で計算）</span><button data-act="trialLive">${S.trialLive ? '目安で試す' : '今の待ちで試す'}</button>` : '';
+    ? `<span>お試し表示（待ちは${S.trialLive ? '今の数字' : STATS ? '記録' : '目安'}で予測）</span><button data-act="trialLive">${S.trialLive ? (STATS ? '記録で試す' : '目安で試す') : '今の待ちで試す'}</button>` : '';
   $('src').textContent = `${W.source ? `データ：${W.source}・` : ''}版 ${APP_VERSION}`;
 
   // 時間指定を15分過ぎても「済」でないもの
@@ -618,7 +676,7 @@ function renderList(env) {
     let meta = [];
     if (i.type === 'fixed') meta.push(`<span class="tag fixed">時間指定 ${fmt(fixedTime(i))}</span>`);
     else meta.push(`<span class="tag ${i.type === 'pass' ? 'pass' : ''}">${TYPE_LABEL[i.type]}</span>`);
-    if (ride) { const w = env.w[i.id]; meta.push(`待ち <b>${w.wait}分</b>（${w.src}）`); }
+    if (ride) { const w = env.w[i.id]; const p0 = profAt(env.prof[i.id], env.nowT); meta.push(`待ち <b>${w.wait}分</b>（${w.src}${w.suspect ? '・止まっているかも' : ''}）`); if (p0 != null) meta.push(`いつもは${round5(p0)}分`); }
     if (i.est != null) meta.push(`目安${i.est}分`);
     if (i.after) meta.push(`${i.after}以降`);
     if (i.by) meta.push(`${i.by}までに`);
@@ -683,7 +741,7 @@ function renderPlan(env, t0, now) {
       <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
     ${verdict}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
-    <p class="note">${env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
+    <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
 }
 
 function renderRules(env) {
@@ -700,6 +758,9 @@ function renderRules(env) {
       <li>11/5は7:15に着いて、7:45ごろ開園として計算（公式は8:00、実際は7:30〜7:50の見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）</li>
       <li>コナン・チェンソーマンは9:00から、SINGは10:30からとして計算（10/11の記録で最初に数字が出た時刻）</li>
       <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
+      <li>待ち時間は、毎日の記録から「平日の30分ごとの待ち」を集計して予測。当日は、今の待ちが記録より多いか少ないかで補正（先の時刻ほど記録に近づける）</li>
+      <li>「今並ぶのが得か」は、このあと1〜3時間の予測と比べる。後で長くなるものは今のうちに</li>
+      <li>「いつも60分以上」なのに10分以下と出ているものは、止まっている・受付終了かもしれないので記録の数字で計算</li>
       <li>予定表では、1つ終わるごとに${S.gap}分の余裕（トイレ・迷った時間）をみる</li>
       <li>かかる時間 ＝ 移動 ＋ 待ち ＋ 所要。移動は同じエリアなら${S.same}分、違うエリアは下の「歩く時間」の一番近い道順の合計${+S.pace > 1 ? `×${S.pace}（ゆっくり）` : ''}</li>
       <li>点数 ＝ 優先度（高3・中2・低1）×60 ＋（目安待ち − 今の待ち）×0.8 − かかる時間×0.5。パスは＋25、食事の締め切りまで30分以内（食べ終わる時刻で判定）なら＋80</li>
@@ -959,6 +1020,7 @@ const cached = LS.get(K.data, null);
 if (cached) W = Object.assign(cached, { source: '保存データ' });
 renderSettings();
 render();
+loadStats().then(render);
 refresh();
 setInterval(refresh, 3 * 60 * 1000); // 開いている間は3分おきに再取得
 setInterval(render, 20 * 1000);
