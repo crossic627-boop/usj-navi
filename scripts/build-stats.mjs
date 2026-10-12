@@ -63,12 +63,46 @@ export async function buildStats() {
       for (const [slot, means] of Object.entries(slots)) ((rides[id] ??= {})[type] ??= {})[slot] = [Math.round(median(means)), means.length];
     }
   }
-  const stats = { source: 'Powered by Queue-Times.com', slotMinutes: SLOT, days, rides };
+  const stats = { source: 'Powered by Queue-Times.com', slotMinutes: SLOT, days, rides, opening: await buildOpening(files) };
   const text = JSON.stringify(stats) + '\n';
   let old = '';
   try { old = await readFile(OUT, 'utf8'); } catch {}
   if (old !== text) await writeFile(OUT, text);
   return { changed: old !== text, days };
+}
+
+// 開園の記録：日ごとに「アトラクションが動き出した時刻」と、開園直後に待ちが伸びる速さ
+// （入口ゲートの行列のデータはないので、何分前に並ぶかはアプリ側で公開情報の目安と合わせて出す）
+const RUSH = [12070, 12066, 12065, 7092]; // バックドロップ・ミニオン・ハリポタ・フライング
+async function buildOpening(files) {
+  const out = [];
+  for (const f of files) {
+    const date = f.replace('.jsonl', '');
+    let lastClosed = null, firstOpen = null;
+    const rec = {};
+    for (const line of (await readFile(path.join(HISTORY, f), 'utf8')).split('\n')) {
+      if (!line.trim()) continue;
+      const rows = JSON.parse(line);
+      const m = Math.max(...rows.map((r) => { const d = jst(r[3]); return d.getUTCHours() * 60 + d.getUTCMinutes(); }));
+      if (m < 5 * 60 || m > 14 * 60) continue; // 朝の分だけ見る
+      const open = rows.filter((r) => r[2]).length;
+      // 開園前の確認（[0,0,0,時刻]）か、ほぼ全部止まっている回 → 「この時刻はまだ開園前」
+      if (firstOpen == null && (rows[0][0] === 0 || (open < 3 && rows.length >= 10))) lastClosed = m;
+      if (firstOpen == null && open >= 5) firstOpen = m;
+      if (firstOpen != null) for (const [id, w, o] of rows) if (o && RUSH.includes(id)) (rec[id] ??= []).push([m, w]);
+    }
+    if (firstOpen == null) continue;
+    const near = (arr, m) => { let b = null; for (const x of arr || []) if (Math.abs(x[0] - m) <= 12 && (!b || Math.abs(x[0] - m) < Math.abs(b[0] - m))) b = x; return b ? b[1] : null; };
+    const rush = {};
+    for (const id of RUSH) {
+      const arr = rec[id];
+      if (!arr) continue;
+      const cross = arr.find(([m, w]) => w >= 60);
+      rush[id] = { w0: near(arr, firstOpen), w20: near(arr, firstOpen + 20), w40: near(arr, firstOpen + 40), w60: near(arr, firstOpen + 60), over60: cross ? cross[0] - firstOpen : null };
+    }
+    out.push({ date, type: dayType(date), firstOpen, lastClosed, rush });
+  }
+  return out;
 }
 
 const { changed, days } = await buildStats();

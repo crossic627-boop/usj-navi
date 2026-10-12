@@ -146,6 +146,10 @@ details > div { padding: 0 14px 14px; }
 .set h4 { margin: 8px 0 0; font-size: 16px; }
 .note { font-size: 15px; color: var(--muted); }
 ul.rules { padding-left: 1.2em; margin: 0; }
+.optbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.optbl th, .optbl td { text-align: left; padding: 5px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.optbl th { color: var(--muted); font-weight: 700; }
+.optbl small { color: var(--muted); font-weight: 600; }
 ul.rules li { margin: 6px 0; }
 
 footer { margin-top: 20px; text-align: center; font-size: 15px; color: var(--muted); }
@@ -182,6 +186,7 @@ footer a { font-weight: 700; }
   <section id="plan"></section>
 
   <details id="dList"><summary>待ち時間を見る・直す</summary><div id="list"></div></details>
+  <details id="dOpen"><summary>開園と到着の目安</summary><div id="opening"></div></details>
   <details id="dNotify"><summary>お知らせ・カレンダー</summary><div id="notify"></div></details>
   <details id="dRules"><summary>決め方のルール</summary><div id="rules"></div></details>
   <details id="dSet"><summary>設定</summary><div id="settings"></div></details>
@@ -236,7 +241,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12g';
+const APP_VERSION = '2026-10-12h';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -697,6 +702,7 @@ function render() {
   renderList(env);
   renderPlan(env, t, r);
   renderRules(env);
+  renderOpening();
   renderNotify();
   checkAlarms(c, env);
 }
@@ -790,6 +796,29 @@ function renderPlan(env, t0, now) {
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
     <p class="note">${wxNote}</p>
     <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
+}
+
+// 開園と到着の目安：毎日の記録（実際に動き出した時刻・開園直後の伸び方）と、公開情報の目安を合わせる
+function renderOpening() {
+  const op = (STATS && STATS.opening) || [];
+  const wk = op.filter((o) => o.type === 'weekday');
+  const base = wk.length ? wk : op;
+  const med = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[(s.length - 1) >> 1] : null; };
+  const dow = (d) => '日月火水木金土'[new Date(d + 'T00:00:00Z').getUTCDay()];
+  const w = (v) => (v == null ? '–' : v + '分');
+  const bd = base.map((o) => o.rush[12070]).filter(Boolean);
+  const rushText = bd.length ? `記録（${base.length}日分）では、バックドロップは開園時${med(bd.map((x) => x.w0))}分 → 20分後${med(bd.map((x) => x.w20).filter((x) => x != null))}分。最初の20分が勝負です。` : '';
+  const rows = op.slice(-10).reverse().map((o) => `<tr><td>${o.date.slice(5).replace('-', '/')}（${dow(o.date)}）${o.type === 'weekday' ? '' : '<small>休</small>'}</td>
+    <td>${o.lastClosed != null ? fmt(o.lastClosed) + '〜' : ''}${fmt(o.firstOpen)}</td>
+    <td>${o.rush[12070] ? `${w(o.rush[12070].w0)}→${w(o.rush[12070].w20)}→${w(o.rush[12070].w40)}` : '–'}</td></tr>`).join('');
+  $('opening').innerHTML = `
+    <h4 style="margin:0 0 4px">11/5（木）朝</h4>
+    <p class="note" style="margin:0">公式は<b>8:00開園</b>。実際は<b>7:30〜7:50ごろ</b>に早まる見込みです（<a href="https://castel.jp/p/2152" target="_blank" rel="noopener">キャステルの予想</a>）。平日は開園の30〜60分前に着くのが目安なので、<b>7:00〜7:15に入口に着く</b>のがおすすめです。${rushText}</p>
+    <h4 style="margin:14px 0 4px">11/4（水）午後</h4>
+    <p class="note" style="margin:0">1.5デイ・パスの1日目は<b>15:00から入場</b>なので、朝の開園は関係ありません。手荷物検査と入場の時間をみて、<b>14:30ごろに着けば十分</b>です（午後の入口の行列は記録がないので、目安です）。</p>
+    <h4 style="margin:14px 0 4px">記録：実際に動き出した時刻</h4>
+    ${rows ? `<table class="optbl"><tr><th>日</th><th>開園</th><th>バックドロップ<br><small>開園時→20分→40分</small></th></tr>${rows}</table>
+      <p class="note">「7:55〜8:15」は、7:55にはまだ開園前で、8:15には動いていたという意味です。確認は15〜20分おきなので、幅があります。</p>` : '<p class="note">まだ記録がありません。</p>'}`;
 }
 
 function renderRules(env) {

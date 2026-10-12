@@ -47,7 +47,16 @@ export async function fetchWaits({ history = false } = {}) {
 
   let old = '';
   try { old = await readFile(OUT, 'utf8'); } catch {}
-  if (old === text) return { changed: false, data };
+  if (old === text) {
+    // 朝（5〜11時）にまだ全部止まっていたら「確認したけどまだ開園前」と記録する（開園時刻を絞り込むため）：[0, 0, 0, 確認した時刻]
+    const h = new Date(Date.now() + 9 * 3600e3).getUTCHours();
+    if (history && h >= 5 && h < 11 && !rides.some((r) => r.is_open)) {
+      await mkdir(HISTORY, { recursive: true });
+      await appendFile(path.join(HISTORY, jstDate(new Date().toISOString()) + '.jsonl'), JSON.stringify([[0, 0, 0, new Date().toISOString()]]) + '\n');
+      return { changed: true, data };
+    }
+    return { changed: false, data };
+  }
   await writeFile(OUT, text);
   if (history) {
     // 前回から last_updated が変わったものだけ記録する：[id, 待ち分, 運営中なら1, last_updated]
