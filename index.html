@@ -89,7 +89,14 @@ a { color: var(--accent); }
 .tag.pass { color: var(--pass); margin-left: 0; } .tag.fixed { color: var(--warn); } .tag.ok { color: var(--ok); }
 
 /* このあと：乗り換え案内のような予定表 */
-#plan h3 { margin: 22px 0 6px; font-size: 14px; font-weight: 800; color: var(--muted); letter-spacing: .08em; }
+.schedH { margin: 16px 0 4px; font-size: 14px; font-weight: 800; color: var(--muted); letter-spacing: .08em; }
+.tl2.past { margin-bottom: 0; }
+.tl2.past li { color: var(--muted); font-size: 15px; padding: 7px 2px; }
+.tl2.past li time { font-weight: 700; }
+.tl2.past li.done span::before { content: "✓ "; color: var(--ok); font-weight: 900; }
+.tl2.past li.skip span { text-decoration: line-through; }
+#now { scroll-margin-top: 12px; }
+#plan { margin-top: 4px; }
 .tl2 { list-style: none; margin: 0; padding: 0; }
 .tl2 li { display: flex; align-items: baseline; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 17px; }
 .tl2 time { flex: 0 0 3.2em; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
@@ -169,6 +176,8 @@ footer a { font-weight: 700; }
   <div id="alert"></div>
   <div id="overdue"></div>
 
+  <h3 class="schedH">タイムスケジュール</h3>
+  <ol id="past" class="tl2 past"></ol>
   <section id="now" class="card" aria-live="polite"></section>
   <section id="plan"></section>
 
@@ -227,7 +236,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12f';
+const APP_VERSION = '2026-10-12g';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -240,7 +249,7 @@ const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: f
 let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
 S.times = S.times || {};
 const saveS = () => LS.set(K.settings, S);
-const blankState = () => ({ status: {}, at: {}, paused: {}, overrides: {}, area: {}, chosen: null });
+const blankState = () => ({ status: {}, at: {}, doneMin: {}, doneDay: {}, paused: {}, overrides: {}, area: {}, chosen: null });
 function loadState(trial) { return Object.assign(blankState(), LS.get(trial ? K.trial : K.state, {})); }
 function saveState(trial, st) { LS.set(trial ? K.trial : K.state, st); }
 
@@ -598,7 +607,7 @@ function reasonOf(r, env) {
 
 /* ============ 画面 ============ */
 const $ = (id) => document.getElementById(id);
-let lastEnv = null, lastCtx = null;
+let lastEnv = null, lastCtx = null, lastHere = null;
 
 function render() {
   const c = getCtx();
@@ -629,7 +638,7 @@ function render() {
   const r = c.now >= c.end ? { kind: 'end' } : plan(t, env.area, env.done, env, env.chosen);
   const isRide = (x) => x.type === 'standby' || x.type === 'pass';
   const risk = (ok, what) => ok < 0.8 ? `<p class="risk">⚠ ${what}に間に合わないかも</p>` : '';
-  const lead = c.now < c.start ? `開園したら（${fmt(c.start)}ごろ）まっすぐ` : 'いま';
+  const lead = c.now < c.start ? `いまここ（${fmt(c.now)}）→ 開園したら（${fmt(c.start)}ごろ）まっすぐ` : `いまここ（${fmt(c.now)}）`;
   let h = '';
   if (r.kind === 'go') {
     const i = r.item;
@@ -660,6 +669,17 @@ function render() {
     h = `<p class="lead">${c.now >= c.end ? '退園時刻です' : '今日の予定はここまで'}</p><h2>出口へ</h2><p class="why">${esc(c.day.endText)}</p>`;
   }
   $('now').innerHTML = h;
+
+  // 終わったもの（この日に済・あきらめにしたもの）を、終わった時刻の順に上に並べる
+  const st0 = env.st;
+  const doneToday = env.items.filter((i) => st0.status[i.id] && (st0.doneDay[i.id] || c.dayKey) === c.dayKey)
+    .sort((a, b) => (st0.doneMin[a.id] ?? 0) - (st0.doneMin[b.id] ?? 0));
+  const arriveText = c.day.open ? `到着（${c.day.open.replace(/^0/, '')}ごろ開園）` : '入園';
+  $('past').innerHTML = `<li><time>${fmt(c.arrive)}</time><span>${arriveText}</span></li>` + doneToday.map((i) =>
+    `<li class="${st0.status[i.id] === 'done' ? 'done' : 'skip'}"><time>${st0.doneMin[i.id] != null ? fmt(st0.doneMin[i.id]) : ''}</time><span>${name(i)}</span><em>${st0.status[i.id] === 'done' ? '済' : 'あきらめ'}</em></li>`).join('');
+  const hereKey = c.dayKey + (r.item ? r.item.id : r.kind);
+  // 「いまここ」が変わったら、直前に終わったものが少し見える位置までスクロール
+  if (hereKey !== lastHere) { lastHere = hereKey; if (doneToday.length) requestAnimationFrame(() => window.scrollTo({ top: Math.max(0, $('now').getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' })); }
 
   // 上の赤い帯：別のものをしている間に、時間指定へ出発する時刻が近づいたときだけ出す（予定表で見られるので普段は出さない）
   const upcoming = env.items.filter((i) => i.type === 'fixed' && !env.done.has(i.id) && !env.paused.has(i.id) && fixedEnd(i) >= c.now)
@@ -764,7 +784,7 @@ function renderPlan(env, t0, now) {
       ? `天気予報：${bad[0].h}時〜${bad[bad.length - 1].h + 1}時に${[...new Set(bad.map((b) => wxWord(b.x)))].join('・')}。屋外のコースターはその時間を避けて組んでいます。`
       : '天気予報：大きな雨や風はなさそうです。';
   }
-  $('plan').innerHTML = `<h3>このあと</h3><ol class="tl2">${li}
+  $('plan').innerHTML = `<ol class="tl2">${li}
       <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
     ${verdict}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
@@ -833,7 +853,7 @@ document.addEventListener('click', (e) => {
   if (act === 'done' || act === 'skip') {
     showAlts = false;
     const undo = mutate((st, c) => {
-      st.status[id] = act; st.at[id] = Date.now();
+      st.status[id] = act; st.at[id] = Date.now(); st.doneMin[id] = c.now; st.doneDay[id] = c.dayKey;
       if (st.chosen === id) st.chosen = null;
       if (act === 'done' && item.area) st.area[c.dayKey] = item.area;
     });
@@ -846,7 +866,7 @@ document.addEventListener('click', (e) => {
   } else if (act === 'unpick') {
     mutate((st) => { st.chosen = null; });
   } else if (act === 'undo') {
-    mutate((st) => { delete st.status[id]; delete st.at[id]; });
+    mutate((st) => { delete st.status[id]; delete st.at[id]; delete st.doneMin[id]; delete st.doneDay[id]; });
   } else if (act === 'pause') {
     mutate((st) => { if (st.paused[id]) delete st.paused[id]; else st.paused[id] = true; });
   } else if (act === 'edit') {
