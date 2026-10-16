@@ -241,7 +241,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-12h';
+const APP_VERSION = '2026-10-16a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -326,8 +326,11 @@ function normalize(json) {
     rides[r.id] = { wait: r.wait_time, open: r.is_open, lu };
     if (lu > up) up = lu;
   }
+  // ほかは更新されているのに3時間以上止まったままのもの → 運休中でも「運営中」のまま残ることがあるので、休止とみなす
+  // （2026/10/13〜 ハリドリが120分のまま止まっていた）
+  for (const r of Object.values(rides)) if (r.open && r.lu && up - r.lu > 3 * 3600e3) { r.open = false; r.stale = true; }
   // 全部 false のときは開園前・閉園後とみなして「休止」判定に使わない
-  return { rides, updatedAt: up, parkOpen: list.some((r) => r.is_open) };
+  return { rides, updatedAt: up, parkOpen: Object.values(rides).some((r) => r.open) };
 }
 async function getJSON(url, ms) {
   const ctl = new AbortController();

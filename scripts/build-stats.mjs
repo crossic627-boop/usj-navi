@@ -86,8 +86,8 @@ async function buildOpening(files) {
       const m = Math.max(...rows.map((r) => { const d = jst(r[3]); return d.getUTCHours() * 60 + d.getUTCMinutes(); }));
       if (m < 5 * 60 || m > 14 * 60) continue; // 朝の分だけ見る
       const open = rows.filter((r) => r[2]).length;
-      // 開園前の確認（[0,0,0,時刻]）か、ほぼ全部止まっている回 → 「この時刻はまだ開園前」
-      if (firstOpen == null && (rows[0][0] === 0 || (open < 3 && rows.length >= 10))) lastClosed = m;
+      // 開園前の確認（[0,0,0,時刻]）か、全部（ほぼ全部）止まっている回 → 「この時刻はまだ開園前」
+      if (firstOpen == null && (rows[0][0] === 0 || open === 0 || (open < 3 && rows.length >= 10))) lastClosed = m;
       if (firstOpen == null && open >= 5) firstOpen = m;
       if (firstOpen != null) for (const [id, w, o] of rows) if (o && RUSH.includes(id)) (rec[id] ??= []).push([m, w]);
     }
