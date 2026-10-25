@@ -1,5 +1,6 @@
 // history/*.jsonl にためた待ち時間を集計して stats.json を作る。
 // アトラクションごとに「平日／休日 × 30分ごと」の待ち時間（日ごとの平均の中央値）と、何日分かを出す。
+// あわせて、旅行と同じ曜日（水・木）だけの集計 wt も出す（アプリ側で重く使う）。
 // 使い方: node scripts/build-stats.mjs
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -11,12 +12,16 @@ const OUT = path.join(ROOT, 'stats.json');
 const SLOT = 30;
 // 土日以外の休日（祝日）
 const HOLIDAYS = new Set(['2026-10-12', '2026-11-03', '2026-11-23']);
+// ハリドリ（バックドロップも）が運休して、ほかの乗り物がいつもより混んだ日。水・木の集計 wt には入れない
+const ODD_DAYS = new Set(['2026-10-14', '2026-10-15', '2026-10-16']);
 
 const jst = (iso) => new Date(Date.parse(iso) + 9 * 3600e3);
 const dayType = (date) => {
   const dow = new Date(date + 'T00:00:00Z').getUTCDay();
   return dow === 0 || dow === 6 || HOLIDAYS.has(date) ? 'holiday' : 'weekday';
 };
+// 旅行と同じ曜日（水・木）の平日か
+const isWedThu = (date) => { const dow = new Date(date + 'T00:00:00Z').getUTCDay(); return (dow === 3 || dow === 4) && dayType(date) === 'weekday' && !ODD_DAYS.has(date); };
 const median = (a) => { const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
 export async function buildStats() {
@@ -46,14 +51,16 @@ export async function buildStats() {
       }
     }
   }
-  const days = { weekday: [], holiday: [] };
+  const days = { weekday: [], holiday: [], wt: [] };
   const acc = {}; // acc[id][type][slot] = [日ごとの平均…]
   for (const date of Object.keys(perDay).sort()) {
-    const type = dayType(date);
-    days[type].push(date);
+    const types = [dayType(date)];
+    if (isWedThu(date)) types.push('wt');
+    for (const type of types) days[type].push(date);
     for (const [id, slots] of Object.entries(perDay[date])) {
       for (const [slot, ws] of Object.entries(slots)) {
-        (((acc[id] ??= {})[type] ??= {})[slot] ??= []).push(ws.reduce((a, b) => a + b, 0) / ws.length);
+        const mean = ws.reduce((a, b) => a + b, 0) / ws.length;
+        for (const type of types) (((acc[id] ??= {})[type] ??= {})[slot] ??= []).push(mean);
       }
     }
   }
@@ -106,4 +113,4 @@ async function buildOpening(files) {
 }
 
 const { changed, days } = await buildStats();
-console.log(`${changed ? '集計を更新' : '集計に変化なし'}: 平日 ${days.weekday.length}日（${days.weekday.join(', ')}）／休日 ${days.holiday.length}日（${days.holiday.join(', ')}）`);
+console.log(`${changed ? '集計を更新' : '集計に変化なし'}: 平日 ${days.weekday.length}日（${days.weekday.join(', ')}）／休日 ${days.holiday.length}日（${days.holiday.join(', ')}）／うち水・木 ${days.wt.length}日（${days.wt.join(', ')}）`);

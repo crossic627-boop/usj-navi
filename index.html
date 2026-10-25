@@ -241,7 +241,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-16a';
+const APP_VERSION = '2026-10-25a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -377,7 +377,9 @@ async function loadStats() {
   try { STATS = await getJSON('./stats.json?t=' + Date.now(), 8000); statsAt = Date.now(); LS.set('usjnavi.stats', STATS); } catch {}
 }
 const statDays = (type) => (STATS && STATS.days[type] || []).length;
-// 旅行の日（平日）の「30分ごとの待ち」。平日の記録が2日分そろうまでは、休日の記録も軽く混ぜる
+// 旅行の日（平日）の「30分ごとの待ち」。平日の記録が2日分そろうまでは、休日の記録も軽く混ぜる。
+// 旅行と同じ水・木の記録が2日分以上ある時間帯は、そちらを65%・平日全体を35%で合わせる（木曜はほかの平日より混むため）
+const WT_WEIGHT = 0.65;
 function profileOf(qt) {
   const r = STATS && qt && STATS.rides[qt];
   if (!r) return null;
@@ -385,8 +387,10 @@ function profileOf(qt) {
   const add = (src, weight) => { for (const [k, [w, n]] of Object.entries(src || {})) { const o = (sum[k] ??= { s: 0, n: 0 }); o.s += w * n * weight; o.n += n * weight; } };
   add(r.weekday, 1);
   if (statDays('weekday') < 2) add(r.holiday, 0.5);
+  const wt = statDays('wt') >= 2 ? r.wt || {} : {};
+  const val = (k) => { const base = sum[k].s / sum[k].n, x = wt[k]; return x && x[1] >= 2 ? WT_WEIGHT * x[0] + (1 - WT_WEIGHT) * base : base; };
   const keys = Object.keys(sum).map(Number).sort((a, b) => a - b);
-  return keys.length ? keys.map((k) => [k + STATS.slotMinutes / 2, sum[k].s / sum[k].n]) : null;
+  return keys.length ? keys.map((k) => [k + STATS.slotMinutes / 2, val(k)]) : null;
 }
 // 時刻 m の予測（30分ごとの値の間をなめらかにつなぐ）
 function profAt(prof, m) {
@@ -798,7 +802,7 @@ function renderPlan(env, t0, now) {
     ${verdict}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
     <p class="note">${wxNote}</p>
-    <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
+    <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日${statDays('wt') >= 2 ? `。旅行と同じ水・木の${statDays('wt')}日分を重く` : ''}）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
 }
 
 // 開園と到着の目安：毎日の記録（実際に動き出した時刻・開園直後の伸び方）と、公開情報の目安を合わせる
