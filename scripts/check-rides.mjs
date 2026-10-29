@@ -83,7 +83,10 @@ for (const day of all.slice(-days)) {
     const a = analyze(day, r.qt);
     const past = base.map((d) => analyze(d, r.qt)).filter((x) => x.ran);
     const notes = [];
-    if (!a.ran) {
+    if (!a.ran && day === all.at(-1) && past.length && day.polls.at(-1) < median(past.map((x) => x.first))) {
+      lines.push(`  … ${r.name}：まだ始まる前（いつもは${hm(median(past.map((x) => x.first)))}ごろから）`);
+      continue;
+    } else if (!a.ran) {
       if (past.length) notes.push(`運休（一度も更新なし。前の${base.length}日のうち${past.length}日は動いていた）`);
       else notes.push('この数日ずっと更新なし');
     } else {
