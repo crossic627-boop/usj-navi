@@ -210,7 +210,7 @@ footer a { font-weight: 700; }
 /* ============ 予定データ ============ */
 const DAYS = {
   d4: { key: 'd4', date: '2026-11-04', label: '11/4（水）', start: '15:00', end: '20:00', endText: '20:00 退園 → シティウォークの551へ', startArea: 'ハリウッド' },
-  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:15', open: '07:45', end: '21:30', endText: '21:30 出口へ（ホテル門限23時）', startArea: 'ハリウッド' },
+  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:45', open: '07:45', end: '22:00', endText: '22:00 閉園。出口へ（ホテル門限24時）', startArea: 'ハリウッド' },
 };
 // type: fixed=時間指定 / pass=エクスプレス / standby=スタンバイ / event=イベント / meal=食事 / rest=休憩
 // area が null のもの（食事・休憩など）は「近くで済ませる」扱い（移動は同じエリアの時間）
@@ -222,26 +222,26 @@ const ITEMS = [
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
-  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
-  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
-  { id: 'hp',      name: 'ハリー・ポッター', days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
+  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
+  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
+  { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
-  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
+  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'photo',   name: '写真・グッズ・USJ土産', chip: '写真・グッズ', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
   { id: 'dinner5', name: '夕食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 40, pri: 3, area: null },
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
-  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
+  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-10-25a';
+const APP_VERSION = '2026-11-01a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -250,7 +250,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
-const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, times: {}, trialLive: false, pace: 1, gap: 5 };
+const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, rain: false, times: {}, trialLive: false, pace: 1, gap: 5 };
 let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
 S.times = S.times || {};
 const saveS = () => LS.set(K.settings, S);
@@ -556,8 +556,9 @@ function plan(t, area, done, env, pick) {
     if (i.type === 'pass') score += 25;
     if (i.type === 'meal' && toMin(i.by) - finish <= 30) score += 80; // 食べ終わる時刻が締め切りの30分前を過ぎるなら急ぐ
     const wx = i.outdoor ? wxAt_(env.c.day.date, t + tr + wait) : null;
-    if (openRush && !(wx && wx.lv === 2)) score += 500; // 開園直後にまっすぐ行くもの（大雨・強風の予報なら止まっている可能性が高いのでやめる）
+    if (openRush && !(wx && wx.lv === 2) && !(S.rain && i.outdoor)) score += 500; // 開園直後にまっすぐ行くもの（大雨・強風の予報や雨の日モードなら、止まっている可能性が高いのでやめる）
     if (wx && wx.lv) score -= wx.lv === 2 ? 150 : 40;
+    if (S.rain) score += i.outdoor ? -100 : i.indoor ? 30 : 0; // 雨の日モード：屋外は後回し、屋内を先に
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
     cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak, wx });
@@ -613,6 +614,8 @@ function reasonOf(r, env) {
     else p.push('待ちは目安どおり');
   }
   if (r.wx && r.wx.lv) p.push(`${wxWord(r.wx)}の予報。屋外なので止まるかも`);
+  if (S.rain && i.outdoor) p.push('雨の日モード：屋外なので止まるかも');
+  else if (S.rain && i.indoor) p.push('雨の日モード：屋内なので雨でもだいじょうぶ');
   p.push(r.nf ? `${fmt(r.nf.time)}の${short(r.nf.i)}に間に合う` : `${env.c.day.end}の退園までに終わる`);
   return p.join('。');
 }
@@ -820,7 +823,7 @@ function renderOpening() {
     <td>${o.rush[12070] ? `${w(o.rush[12070].w0)}→${w(o.rush[12070].w20)}→${w(o.rush[12070].w40)}` : '–'}</td></tr>`).join('');
   $('opening').innerHTML = `
     <h4 style="margin:0 0 4px">11/5（木）朝</h4>
-    <p class="note" style="margin:0">公式は<b>8:00開園</b>。実際は<b>7:30〜7:50ごろ</b>に早まる見込みです（<a href="https://castel.jp/p/2152" target="_blank" rel="noopener">キャステルの予想</a>）。平日は開園の30〜60分前に着くのが目安なので、<b>7:00〜7:15に入口に着く</b>のがおすすめです。${rushText}</p>
+    <p class="note" style="margin:0">公式は<b>8:00開園</b>。実際は<b>7:30〜7:50ごろ</b>に早まる見込みです（<a href="https://castel.jp/p/2152" target="_blank" rel="noopener">キャステルの予想</a>）。予定では<b>7:45に入口に着く</b>として計算しています（平日は開園の30〜60分前に着くのが目安なので、早く行けるなら7:00〜7:15が安心です）。${rushText}</p>
     <h4 style="margin:14px 0 4px">11/4（水）午後</h4>
     <p class="note" style="margin:0">1.5デイ・パスの1日目は<b>15:00から入場</b>なので、朝の開園は関係ありません。手荷物検査と入場の時間をみて、<b>14:30ごろに着けば十分</b>です（午後の入口の行列は記録がないので、目安です）。</p>
     <h4 style="margin:14px 0 4px">記録：実際に動き出した時刻</h4>
@@ -835,16 +838,17 @@ function renderRules(env) {
   $('rules').innerHTML = `<ul class="rules">
     <li class="${bdHigh ? 'hl' : ''}">バックドロップが90分超なら、ミニオンを先に。21時台にもう一度見る${bdHigh ? `（今 ${env.w.backdrop.wait}分）` : ''}</li>
     <li class="${fdStop ? 'hl' : ''}">フライング・ダイナソーが止まっていたら、休止として扱う（自動で外れなければ「待ち時間一覧」で「休止」）</li>
-    <li>21:30には出口へ</li></ul>
+    <li>11/5は22:00の閉園まで（ホテル門限24時）</li></ul>
     <h4 style="margin:14px 0 4px">「次はここ」の決め方</h4>
     <ul class="rules note">
       <li>時間指定に向けて出発する時刻 ＝ 時刻 − 移動 − 余裕5分。それまでに終わるものだけが候補</li>
-      <li>11/5は7:15に着いて、7:45ごろ開園として計算（公式は8:00、実際は7:30〜7:50の見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）</li>
+      <li>11/5は7:45に着いて、そのまま入れるとして計算（公式は8:00開園、実際は7:30〜7:50に開く見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）。雨の日モードのときは行かない</li>
       <li>コナン・チェンソーマンは9:00から、SINGは10:30からとして計算（10/11の記録で最初に数字が出た時刻）</li>
       <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
       <li>待ち時間は、毎日の記録から「平日の30分ごとの待ち」を集計して予測。当日は、今の待ちが記録より多いか少ないかで補正（先の時刻ほど記録に近づける）</li>
       <li>「今並ぶのが得か」は、このあと1〜3時間の予測と比べる。後で長くなるものは今のうちに</li>
       <li>天気予報（Open-Meteo）で雨や強い風の時間は、屋外のコースター（バックドロップ・ハリドリ・フライング）を避ける</li>
+      <li>雨の日モード（設定）：屋外（バックドロップ・ハリドリ・フライング）は−100、屋内（ミニオン・ライド・コナン・SING・ハリー・ポッター・チェンソーマン）は＋30</li>
       <li>「いつも60分以上」なのに10分以下と出ているものは、止まっている・受付終了かもしれないので記録の数字で計算</li>
       <li>予定表では、1つ終わるごとに${S.gap}分の余裕（トイレ・迷った時間）をみる</li>
       <li>かかる時間 ＝ 移動 ＋ 待ち ＋ 所要。移動は同じエリアなら${S.same}分、違うエリアは下の「歩く時間」の一番近い道順の合計${+S.pace > 1 ? `×${S.pace}（ゆっくり）` : ''}</li>
@@ -1074,6 +1078,7 @@ function renderSettings() {
   const fixed = ITEMS.filter((i) => i.type === 'fixed');
   $('settings').innerHTML = `<div class="set">
     <label><span><b>疲れたモード</b><br><span class="note">優先度「低」を外す</span></span><input type="checkbox" id="sTired" ${S.tired ? 'checked' : ''}></label>
+    <label><span><b>雨の日モード</b><br><span class="note">屋外（バックドロップ・ハリドリ・フライング）を後回しにして、屋内を先に</span></span><input type="checkbox" id="sRain" ${S.rain ? 'checked' : ''}></label>
     <label>日付<select id="sDay">
       <option value="auto">自動（当日に切り替え）</option><option value="d4">11/4（水）</option><option value="d5">11/5（木）</option></select></label>
     <label><span>時刻を固定<br><span class="note">お試し用。空欄で今の時刻</span></span>
@@ -1089,6 +1094,7 @@ function renderSettings() {
   $('sDay').value = S.day;
   const upd = (fn) => { fn(); saveS(); render(); };
   $('sTired').onchange = (e) => upd(() => { S.tired = e.target.checked; });
+  $('sRain').onchange = (e) => upd(() => { S.rain = e.target.checked; });
   $('sDay').onchange = (e) => upd(() => { S.day = e.target.value; });
   $('sTime').onchange = (e) => upd(() => { S.fixTime = e.target.value; });
   $('sTimeClear').onclick = () => { $('sTime').value = ''; upd(() => { S.fixTime = ''; }); };
