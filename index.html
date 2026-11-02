@@ -231,25 +231,30 @@ const ITEMS = [
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
   { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
-  { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 20, pri: 3, area: null },
+  { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', byShow: 'rrshow', dur: 20, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
-  { id: 'photo',   name: '写真・グッズ・USJ土産', chip: '写真・グッズ', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
   { id: 'dinner5', name: '夕方の軽食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 20, pri: 3, area: null },
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
-  // おすすめで追加（opt：時間があれば。入らなくても「入らない」の警告は出さない）：ジョーズ（昼の版は17時ごろまで。夜はハロウィーン版に変わる）
-  { id: 'jaws',    name: 'ジョーズ', outdoor: true, days: ['d4', 'd5'], type: 'standby', before: '16:30', dur: 15, est: 45, pri: 2, opt: true, qt: 12068, area: 'アミティ' },
+  // ショー：公演時刻は日によって違うので、当日の朝に公式アプリで見て「設定」で直す。昼の軽食はショーの直前に（byShow）
+  { id: 'rrshow',  name: 'ユニバーサル・モンスター・ライブ・ロックンロール・ショー', short: 'ロックンロール・ショー', chip: 'ロックンロール', show: true, days: ['d5'], type: 'fixed', time: '13:00', until: '13:05', dur: 30, area: 'ハリウッド' },
+  // 2回目（opt：時間が空いたら。1回目が済んでから・夜の短い時間に）
+  { id: 'hp2',     name: 'ハリー・ポッター（2回目）', chip: 'ハリポタ2回目', indoor: true, opt: true, follows: 'hp', days: ['d5'], type: 'standby', after: '18:30', dur: 25, est: 30, pri: 1, qt: 12065, area: 'ハリー・ポッター' },
+  { id: 'fd2',     name: 'フライング・ダイナソー（2回目）', chip: 'フライング2回目', outdoor: true, opt: true, follows: 'fd', days: ['d5'], type: 'standby', after: '18:30', dur: 15, est: 60, pri: 1, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'bd2',     name: 'バックドロップ（2回目）', chip: 'バックドロップ2回目', outdoor: true, opt: true, follows: 'backdrop', days: ['d5'], type: 'standby', after: '18:30', dur: 10, est: 90, pri: 1, qt: 12070, area: 'ハリウッド' },
+  { id: 'jp2',     name: 'ジュラシック・パーク イン・ザ・ダーク（2回目）', chip: 'ジュラ闇2回目', opt: true, follows: 'jpdark', days: ['d5'], type: 'standby', after: '18:30', dur: 20, est: 40, pri: 1, qt: 15322, area: 'ジュラシック・パーク' },
+  { id: 'minion2', name: 'ミニオン・ライド（2回目）', chip: 'ミニオン2回目', indoor: true, opt: true, follows: 'minion', days: ['d5'], type: 'standby', after: '18:30', dur: 10, est: 35, pri: 1, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03f';
+const APP_VERSION = '2026-11-03g';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -447,11 +452,12 @@ function waitOf(i, st, useEst) {
   if (!useEst && r && r.open !== false && typeof r.wait === 'number') return { wait: r.wait, src: '自動' };
   return { wait: i.est, src: '目安' };
 }
-const QUICK_DUR = 20; // 「食事・写真を短く」のときの時間
+const QUICK_DUR = 10; // 「食事を短く」のときの時間
 // useEst（お試し・翌日の予測）のときは、目安の待ちで計算し、今の休止情報も使わない
 function buildEnv(c, useEst = c.trial && !S.trialLive) {
   const st = loadState(c.trial);
-  const items = ITEMS.filter((i) => i.days.includes(c.dayKey)).map((i) => S.quick && (i.type === 'meal' || i.type === 'rest') ? Object.assign({}, i, { dur: Math.min(i.dur, QUICK_DUR) }) : i);
+  const items = ITEMS.filter((i) => i.days.includes(c.dayKey)).map((i) => S.quick && (i.type === 'meal' || i.type === 'rest') ? Object.assign({}, i, { dur: Math.min(i.dur, QUICK_DUR) }) : i)
+    .map((i) => { const sh = i.byShow && ITEMS.find((x) => x.id === i.byShow); return sh ? Object.assign({}, i, { after: fmt(fixedTime(sh) - 50), by: fmt(fixedTime(sh)) }) : i; });
   const paused = new Map();
   const w = {};
   for (const i of items) {
@@ -535,6 +541,7 @@ function plan(t, area, done, env, pick) {
   const cands = []; let next = null;
   for (const i of pool) {
     if (i.type === 'fixed') continue;
+    if (i.follows && !done.has(i.follows)) continue; // 2回目は1回目が済んでから
     const tr = travel(area, i.area);
     // 開園直後は、まだ待ち時間データが届かないことが多い。最初に行くものは 10/11 の実績（開園時15分）に近い数字で見積もる
     const openRush = i.first === env.c.dayKey && t < env.c.start + 30;
@@ -570,6 +577,7 @@ function plan(t, area, done, env, pick) {
     if (wx && wx.lv) score -= wx.lv === 2 ? 150 : 40;
     if (S.rain) score += i.outdoor ? -100 : i.indoor ? 30 : 0; // 雨の日モード：屋外は後回し、屋内を先に
     if (env.c.dayKey === 'd4' && !i.days.includes('d5')) score += 60; // 11/4にしかないものを先に（両日のものは11/5に回せる）
+    if (i.opt) score -= 40; // 「時間があれば」のものは、決めたものより後
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
     cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak, wx });
@@ -696,16 +704,16 @@ function render() {
         <button data-act="pick" data-id="${a.item.id}">これにする</button></li>`).join('')}</ul>` : ''}`;
   } else if (r.kind === 'fixed') {
     const late = t > r.time, go = t >= r.depart;
-    h = `<p class="lead">${lead}<span class="tag fixed">🔒 時間指定</span></p><h2>${esc(r.item.name)}</h2>
+    h = `<p class="lead">${lead}<span class="tag fixed">${r.item.show ? '🎸 ショー（時刻は公式アプリで）' : '🔒 時間指定'}</span></p><h2>${esc(r.item.name)}</h2>
       <p class="facts"><b>${fmt(r.time)}</b>から<span class="dot">・</span>移動${r.travel}分</p>
       <p class="why ${go ? 'hot' : ''}">${late ? '時刻を過ぎています。急いで！' : go ? '今すぐ出発！' : `${fmt(r.depart)}に出発`}</p>
       <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
   } else if (r.kind === 'move') {
-    h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
+    h = `<p class="lead">${lead}</p><h2>空き時間</h2>
       <p class="facts"><b>${fmt(r.depart)}</b>に出発 → ${name(r.item)}</p>
       <p class="why">今から並ぶと、上の時間指定に間に合いません。</p>`;
   } else if (r.kind === 'wait') {
-    h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
+    h = `<p class="lead">${lead}</p><h2>空き時間</h2>
       <p class="facts"><b>${fmt(r.until)}</b>に動き出す → ${name(r.item)}（${r.item.after}から）</p>`;
   } else {
     h = `<p class="lead">${c.now >= c.end ? '退園時刻です' : '今日の予定はここまで'}</p><h2>出口へ</h2><p class="why">${esc(c.day.endText)}</p>`;
@@ -762,7 +770,7 @@ function renderList(env) {
     if (i.after) meta.push(`${i.after}以降`);
     if (i.before) meta.push(`${i.before}までに並ぶ`);
     if (i.by) meta.push(`${i.by}までに`);
-    if (i.opt) meta.push('おすすめ（時間があれば）');
+    if (i.opt) meta.push('時間があれば');
     else if (i.pri) meta.push(`優先${PRI_LABEL[i.pri]}`);
     if (i.days.length === 2) meta.push('両日');
     const carried = !st && env.carry && env.carry.has(i.id);
@@ -831,7 +839,7 @@ function rescueHtml(list) {
   const names = (a) => a.map(name).join('、');
   const result = (o) => o.left.length ? `→ あと ${names(o.left)} が入らない` : '<span class="good">→ 全部入る</span>';
   const line = (o) => o.kind === 'pick' ? `順番を変える：次は${name(o.item)}へ`
-    : o.kind === 'quick' ? `食事・写真を短くする（${QUICK_DUR}分ずつ）`
+    : o.kind === 'quick' ? `食事を短くする（${QUICK_DUR}分ずつ）`
     : o.kind === 'gap' ? 'トイレ・寄り道なしで急ぐ（余裕0分で計算）'
     : `${names(o.drop)}をあきらめる`;
   const sub = (o) => o.kind === 'giveup' ? (o.left.length ? result(o) : '<span class="good">→ 残りは全部入る</span>') : result(o);
@@ -851,9 +859,9 @@ function renderPlan(env, t0, now) {
   const left = leftAll.filter((i) => !i.opt), optLeft = leftAll.filter((i) => i.opt);
   const fixes = left.length ? rescuesFor(env, t0, left) : [];
   const li = rows.map((x) => x.free
-    ? `<li class="free"><time>${fmt(x.from)}</time><span>休憩・写真</span></li>`
+    ? `<li class="free"><time>${fmt(x.from)}</time><span>空き時間</span></li>`
     : x.at != null
-      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b><small>移動${x.travel}分</small></span><em><i class="pass">パス</i> 🔒${fmt(x.at)}</em></li>`
+      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b><small>移動${x.travel}分</small></span><em><i class="pass">${x.item.show ? 'ショー' : 'パス'}</i> 🔒${fmt(x.at)}</em></li>`
       : `<li><time>${fmt(x.from)}</time><span>出発 → ${name(x.item)}<small>移動${x.travel}分</small></span>${x.item.type === 'pass' ? '<em><i class="pass">パス</i></em>' : x.wait ? `<em>待ち${x.wait}分</em>` : ''}</li>`).join('');
   const span = env.c.dayKey === 'd4' ? '2日間で' : '';
   const verdict = left.length
@@ -872,7 +880,7 @@ function renderPlan(env, t0, now) {
   $('plan').innerHTML = `<ol class="tl2">${li}
       <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
     ${verdict}
-    ${optLeft.length ? `<p class="note">おすすめの ${optLeft.map(name).join('、')} は、今のところ入らない見込み（時間が空いたら）</p>` : ''}
+    ${optLeft.length ? `<p class="note">時間が空いたら：${optLeft.map(name).join('、')}</p>` : ''}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
     ${env.carry && env.carry.size ? `<p class="note">${env.items.filter((i) => env.carry.has(i.id)).map(name).join('、')} は11/4に乗る（乗った）ので、11/5の予定に入れていません</p>` : ''}
     <p class="note">${wxNote}</p>
@@ -915,7 +923,8 @@ function renderRules(env) {
       <li>時間指定に向けて出発する時刻 ＝ 時刻 − 移動 − 余裕5分。それまでに終わるものだけが候補</li>
       <li>11/5は7:45に着いて、そのまま入れるとして計算（公式は8:00開園、実際は7:30〜7:50に開く見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）。雨の日モードのときは行かない</li>
       <li>コナン・チェンソーマンは9:00から、SINGは10:30からとして計算（10/11の記録で最初に数字が出た時刻）</li>
-      <li>ジョーズは16:30までに並ぶ（昼の版は17時ごろまで。夜はハロウィーン版）</li>
+      <li>11/5のロックンロール・ショーは仮に13:00。昼の軽食はその直前。当日の朝に公式アプリで公演時刻を見て、設定で直す</li>
+      <li>2回目（ハリポタ・フライング・バックドロップ・ジュラ闇・ミニオン）は18:30以降、時間が空いたら入れる。入らなくても警告は出さない</li>
       <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
       <li>待ち時間は、毎日の記録から「平日の30分ごとの待ち」を集計して予測。当日は、今の待ちが記録より多いか少ないかで補正（先の時刻ほど記録に近づける）</li>
       <li>「今並ぶのが得か」は、このあと1〜3時間の予測と比べる。後で長くなるものは今のうちに</li>
@@ -1001,7 +1010,7 @@ document.addEventListener('click', (e) => {
       const before = [S.quick, S.gap];
       if (o.kind === 'quick') S.quick = true; else S.gap = 0;
       saveS(); render();
-      toast(o.kind === 'quick' ? `食事・写真を${QUICK_DUR}分にしました` : '余裕0分で計算します', () => { [S.quick, S.gap] = before; saveS(); render(); });
+      toast(o.kind === 'quick' ? `食事を${QUICK_DUR}分にしました` : '余裕0分で計算します', () => { [S.quick, S.gap] = before; saveS(); render(); });
     } else {
       const undo = mutate((st, c) => { for (const i of o.drop) { st.status[i.id] = 'skip'; st.at[i.id] = Date.now(); st.doneMin[i.id] = c.now; st.doneDay[i.id] = c.dayKey; if (st.chosen === i.id) st.chosen = null; } });
       toast(`${o.drop.map(short).join('、')}をあきらめにしました`, undo);
@@ -1167,7 +1176,7 @@ function renderSettings() {
   $('settings').innerHTML = `<div class="set">
     <label><span><b>疲れたモード</b><br><span class="note">優先度「低」を外す</span></span><input type="checkbox" id="sTired" ${S.tired ? 'checked' : ''}></label>
     <label><span><b>雨の日モード</b><br><span class="note">屋外（バックドロップ・ハリドリ・フライング）を後回しにして、屋内を先に</span></span><input type="checkbox" id="sRain" ${S.rain ? 'checked' : ''}></label>
-    <label><span><b>食事・写真を短く</b><br><span class="note">${QUICK_DUR}分ずつで計算する</span></span><input type="checkbox" id="sQuick" ${S.quick ? 'checked' : ''}></label>
+    <label><span><b>食事を短く</b><br><span class="note">${QUICK_DUR}分ずつで計算する</span></span><input type="checkbox" id="sQuick" ${S.quick ? 'checked' : ''}></label>
     <label>1つごとの余裕<span><input type="number" id="sGap" min="0" max="30" value="${S.gap}"> 分</span></label>
     <label>日付<select id="sDay">
       <option value="auto">自動（当日に切り替え）</option><option value="d4">11/4（水）</option><option value="d5">11/5（木）</option></select></label>
@@ -1176,7 +1185,7 @@ function renderSettings() {
     <label>移動（同じエリア）<span><input type="number" id="sSame" min="0" max="60" value="${S.same}"> 分</span></label>
     <label>歩く速さ<select id="sPace"><option value="1">ふつう</option><option value="1.3">ゆっくり（1.3倍）</option><option value="1.6">かなりゆっくり（1.6倍）</option></select></label>
     <h4>時間指定の時刻（チケットと違えば直す）</h4>
-    ${fixed.map((i) => `<label><span>${i.days[0] === 'd4' ? '11/4' : '11/5'} ${esc(short(i))}</span><input type="time" data-time="${i.id}" value="${S.times[i.id] || i.time}"></label>`).join('')}
+    ${fixed.map((i) => `<label><span>${i.days[0] === 'd4' ? '11/4' : '11/5'} ${esc(short(i))}${i.show ? '<br><span class="note">当日の朝、公式アプリの公演時刻に直す</span>' : ''}</span><input type="time" data-time="${i.id}" value="${S.times[i.id] || i.time}"></label>`).join('')}
     <h4>記録を消す</h4>
     <div class="row2"><button class="btn" id="sResetTrial">お試しの記録</button><button class="btn" id="sResetReal">本番の記録</button></div>
     <div class="note">「済」「休止」「手入力」を消します。設定は残ります。</div>
