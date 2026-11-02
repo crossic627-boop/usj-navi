@@ -241,16 +241,15 @@ const ITEMS = [
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
-  // おすすめで追加（opt：時間があれば。入らなくても「入らない」の警告は出さない）：ジョーズ（昼の版は17時ごろまで。夜はハロウィーン版に変わる）・ミニオン・ブラスト（撃って点数を競う。待ち15〜35分）
+  // おすすめで追加（opt：時間があれば。入らなくても「入らない」の警告は出さない）：ジョーズ（昼の版は17時ごろまで。夜はハロウィーン版に変わる）
   { id: 'jaws',    name: 'ジョーズ', outdoor: true, days: ['d4', 'd5'], type: 'standby', before: '16:30', dur: 15, est: 45, pri: 2, opt: true, qt: 12068, area: 'アミティ' },
-  { id: 'blast',   name: 'ヴィランズ・コン ミニオン・ブラスト', short: 'ミニオン・ブラスト', chip: 'ミニオン・ブラスト', days: ['d4', 'd5'], type: 'standby', dur: 15, est: 25, pri: 1, opt: true, qt: 14918, area: 'ミニオン・パーク' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03e';
+const APP_VERSION = '2026-11-03f';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
