@@ -242,7 +242,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03a';
+const APP_VERSION = '2026-11-03b';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -579,7 +579,7 @@ function simulate(env, t0) {
   const done = new Set(env.done), tl = [];
   for (let k = 0; k < 80 && t < end; k++) {
     const r = plan(t, area, done, env, k === 0 ? env.chosen : null);
-    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time, depart: Math.min(t, r.depart), travel: r.travel });
+    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time, depart: Math.max(t, r.depart), travel: r.travel });
     else if (r.kind === 'go') tl.push({ from: t, to: r.finish, item: r.item, wait: r.wait, travel: r.travel });
     else if (r.kind === 'wait' || r.kind === 'move') {
       const nt = Math.max(t + 1, r.kind === 'wait' ? r.until : r.depart);
