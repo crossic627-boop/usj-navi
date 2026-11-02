@@ -247,7 +247,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03c';
+const APP_VERSION = '2026-11-03d';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -631,9 +631,23 @@ function reasonOf(r, env) {
 const $ = (id) => document.getElementById(id);
 let lastEnv = null, lastCtx = null, lastHere = null;
 
+// 11/4が終わる前に11/5を見るとき：11/4に乗る予定（または済）の両日のもの（コナンなど）は、11/5の計算から外す
+function carryFromD4(c) {
+  if (c.dayKey !== 'd5' || c.real.date >= DAYS.d5.date) return new Set();
+  const d4 = DAYS.d4, start = toMin(d4.open || d4.start);
+  const onD4 = c.real.date === d4.date && !S.fixTime;
+  const c4 = Object.assign({}, c, { dayKey: 'd4', day: d4, trial: !onD4, now: onD4 ? Math.floor(c.real.min) : start, arrive: toMin(d4.start), start, end: toMin(d4.end) });
+  const env4 = buildEnv(c4);
+  if (!onD4) env4.chosen = null; // お試しの記録は11/5と共通。11/5で選んだ「次はここ」を11/4の計算に使わない
+  const sim = simulate(env4, Math.max(c4.now, start));
+  return new Set(env4.items.filter((i) => i.days.includes('d5') && sim.done.has(i.id)).map((i) => i.id));
+}
+
 function render() {
   const c = getCtx();
   const env = buildEnv(c);
+  env.carry = carryFromD4(c);
+  if (env.carry.size) env.done = new Set([...env.done, ...env.carry]);
   lastEnv = env; lastCtx = c;
   const t = Math.max(c.now, c.start);
   const name = (i) => esc(i.chip || short(i));
@@ -745,13 +759,14 @@ function renderList(env) {
     if (i.by) meta.push(`${i.by}までに`);
     if (i.pri) meta.push(`優先${PRI_LABEL[i.pri]}`);
     if (i.days.length === 2) meta.push('両日');
-    const status = st === 'done' ? '<span class="tag ok">済</span>' : st === 'skip' ? '<span class="tag">あきらめ</span>' : p ? `<span class="tag fixed">休止中${p === 'auto' ? '（自動）' : ''}</span>` : '';
+    const carried = !st && env.carry && env.carry.has(i.id);
+    const status = st === 'done' ? '<span class="tag ok">済</span>' : st === 'skip' ? '<span class="tag">あきらめ</span>' : carried ? '<span class="tag">11/4に乗る</span>' : p ? `<span class="tag fixed">休止中${p === 'auto' ? '（自動）' : ''}</span>` : '';
     const acts = [];
     if (st) acts.push(`<button class="btn small" data-act="undo" data-id="${i.id}">戻す</button>`);
     else acts.push(`<button class="btn small" data-act="done" data-id="${i.id}">済</button>`);
     if (ride && !st) acts.push(`<button class="btn small" data-act="edit" data-id="${i.id}">直す</button>`);
     if (!st && p !== 'auto') acts.push(`<button class="btn small" data-act="pause" data-id="${i.id}">${p ? '再開' : '休止'}</button>`);
-    return `<div class="item ${st ? 'dim' : ''}"><div class="n">${status}${esc(i.name)}</div>
+    return `<div class="item ${st || carried ? 'dim' : ''}"><div class="n">${status}${esc(i.name)}</div>
       <div class="m">${meta.join('・')}</div><div class="acts">${acts.join('')}</div></div>`;
   }).join('');
 }
@@ -851,6 +866,7 @@ function renderPlan(env, t0, now) {
       <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
     ${verdict}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
+    ${env.carry && env.carry.size ? `<p class="note">${env.items.filter((i) => env.carry.has(i.id)).map(name).join('、')} は11/4に乗る（乗った）ので、11/5の予定に入れていません</p>` : ''}
     <p class="note">${wxNote}</p>
     <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日${statDays('wt') >= 2 ? `。旅行と同じ水・木の${statDays('wt')}日分を重く` : ''}）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。左の時刻は、そこへ向かって動き始める時刻です。</p>`;
 }
