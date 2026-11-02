@@ -230,9 +230,9 @@ const ITEMS = [
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
-  { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
-  { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', byShow: 'rrshow', dur: 20, pri: 3, area: null },
-  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
+  { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 20, pri: 3, area: null },
+  { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
@@ -240,21 +240,20 @@ const ITEMS = [
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
-  // ショー：公演時刻は日によって違うので、当日の朝に公式アプリで見て「設定」で直す。昼の軽食はショーの直前に（byShow）
-  { id: 'rrshow',  name: 'ユニバーサル・モンスター・ライブ・ロックンロール・ショー', short: 'ロックンロール・ショー', chip: 'ロックンロール', show: true, days: ['d5'], type: 'fixed', time: '13:00', until: '13:05', dur: 30, area: 'ハリウッド' },
-  // 2回目（opt：時間が空いたら。1回目が済んでから・夜の短い時間に）
-  { id: 'hp2',     name: 'ハリー・ポッター（2回目）', chip: 'ハリポタ2回目', indoor: true, opt: true, follows: 'hp', days: ['d5'], type: 'standby', after: '18:30', dur: 25, est: 30, pri: 1, qt: 12065, area: 'ハリー・ポッター' },
-  { id: 'fd2',     name: 'フライング・ダイナソー（2回目）', chip: 'フライング2回目', outdoor: true, opt: true, follows: 'fd', days: ['d5'], type: 'standby', after: '18:30', dur: 15, est: 60, pri: 1, qt: 7092, area: 'ジュラシック・パーク' },
-  { id: 'bd2',     name: 'バックドロップ（2回目）', chip: 'バックドロップ2回目', outdoor: true, opt: true, follows: 'backdrop', days: ['d5'], type: 'standby', after: '18:30', dur: 10, est: 90, pri: 1, qt: 12070, area: 'ハリウッド' },
-  { id: 'jp2',     name: 'ジュラシック・パーク イン・ザ・ダーク（2回目）', chip: 'ジュラ闇2回目', opt: true, follows: 'jpdark', days: ['d5'], type: 'standby', after: '18:30', dur: 20, est: 40, pri: 1, qt: 15322, area: 'ジュラシック・パーク' },
-  { id: 'minion2', name: 'ミニオン・ライド（2回目）', chip: 'ミニオン2回目', indoor: true, opt: true, follows: 'minion', days: ['d5'], type: 'standby', after: '18:30', dur: 10, est: 35, pri: 1, qt: 12066, area: 'ミニオン・パーク' },
+  // ショー：公演時刻は決めず、昼の軽食のすぐあとに入れる（ショーが休憩代わり）。当日は公式アプリの時刻に合わせる
+  { id: 'rrshow',  name: 'ユニバーサル・モンスター・ライブ・ロックンロール・ショー', short: 'ロックンロール・ショー', chip: 'ロックンロール', show: true, follows: 'lunch', days: ['d5'], type: 'event', dur: 30, pri: 2, area: 'ハリウッド' },
+  // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
+  { id: 'fd2',     name: 'フライング・ダイナソー（2回目・スタンバイ）', short: 'フライング（2回目）', chip: 'フライング2回目', outdoor: true, opt: true, days: ['d5'], type: 'standby', dur: 15, est: 60, pri: 1, qt: 7092, area: 'ジュラシック・パーク' },
+  { id: 'hdr2',    name: 'ハリウッド・ドリーム・ザ・ライド（2回目・スタンバイ）', short: 'ハリドリ（2回目）', chip: 'ハリドリ2回目', outdoor: true, opt: true, days: ['d5'], type: 'standby', dur: 10, est: 85, pri: 1, qt: 7077, area: 'ハリウッド' },
+  { id: 'bd2',     name: 'バックドロップ（2回目）', chip: 'バックドロップ2回目', outdoor: true, opt: true, follows: 'backdrop', days: ['d5'], type: 'standby', dur: 10, est: 90, pri: 1, qt: 12070, area: 'ハリウッド' },
+  { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', dur: 30, est: 40, pri: 1, area: 'ミニオン・パーク' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03g';
+const APP_VERSION = '2026-11-03h';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -456,8 +455,7 @@ const QUICK_DUR = 10; // 「食事を短く」のときの時間
 // useEst（お試し・翌日の予測）のときは、目安の待ちで計算し、今の休止情報も使わない
 function buildEnv(c, useEst = c.trial && !S.trialLive) {
   const st = loadState(c.trial);
-  const items = ITEMS.filter((i) => i.days.includes(c.dayKey)).map((i) => S.quick && (i.type === 'meal' || i.type === 'rest') ? Object.assign({}, i, { dur: Math.min(i.dur, QUICK_DUR) }) : i)
-    .map((i) => { const sh = i.byShow && ITEMS.find((x) => x.id === i.byShow); return sh ? Object.assign({}, i, { after: fmt(fixedTime(sh) - 50), by: fmt(fixedTime(sh)) }) : i; });
+  const items = ITEMS.filter((i) => i.days.includes(c.dayKey)).map((i) => S.quick && (i.type === 'meal' || i.type === 'rest') ? Object.assign({}, i, { dur: Math.min(i.dur, QUICK_DUR) }) : i);
   const paused = new Map();
   const w = {};
   for (const i of items) {
@@ -470,6 +468,7 @@ function buildEnv(c, useEst = c.trial && !S.trialLive) {
   const chosen = st.chosen && !done.has(st.chosen) && items.some((i) => i.id === st.chosen) ? st.chosen : null;
   const nowT = Math.max(c.now, c.start);
   const prof = {};
+  for (const i of items) if (i.type === 'pass' && i.qt) prof[i.id] = profileOf(i.qt); // パスは「スタンバイだと何分か」を使う時間の判断に
   for (const i of items) if (i.type === 'standby') {
     prof[i.id] = profileOf(i.qt);
     // 「いつも60分以上」なのに10分以下と出ているときは、止まっている・受付終了の可能性が高い
@@ -557,17 +556,26 @@ function plan(t, area, done, env, pick) {
     }
     if (i.before && t + tr > toMin(i.before)) continue; // その時刻までに並び始められないもの
     const finish = t + cost;
-    if (finish > limit && i.id !== pick) continue;
+    // 11/5の最後は、閉園（22:00）の5分前までに並べば乗れる（終わるのは閉園後でもよい）
+    const lastCall = !nf && env.c.dayKey === 'd5' && i.type === 'standby' && t + tr <= end - 5;
+    if (finish > limit && i.id !== pick && !lastCall) continue;
     if (i.type !== 'meal' && i.id !== pick && meals.some((m) => Math.max(finish, toMin(m.after)) + +S.same + m.dur > toMin(m.by))) continue;
     // 間に合う確率：本当の締め切り（時間指定の時刻 − 移動）までに終わる見込み
     const src = env.w[i.id].src;
     const deadline = nf ? nf.time - travel(i.area || area, nf.i.area) : end;
-    const ok = phi((deadline - finish) / spread(i, wait, src, env.age));
+    const ok = lastCall && finish > deadline ? phi((end - 5 - (t + tr)) / 3) : phi((deadline - finish) / spread(i, wait, src, env.age));
     // 今並ぶのが得か：記録があれば「このあと1〜3時間の予測」と比べる（後で長くなるなら今のうちに）。なければ目安と比べる
     let deal = (i.est ?? wait) - wait, peak = null;
     if (env.prof[i.id] && !openRush) {
       const later = [60, 120, 180].map((d) => t + d).filter((x) => x < end).map((x) => ({ t: x, w: env.waitAt(i, x) }));
       if (later.length) { deal = later.reduce((s, x) => s + x.w, 0) / later.length - wait; peak = later.reduce((a, x) => (x.w > a.w ? x : a)); }
+    }
+    // パス：スタンバイの待ちが、このあとより長い時間ほど今使う（朝の空いている時間はスタンバイに回し、パスは混む昼に）
+    if (i.type === 'pass' && env.prof[i.id]) {
+      const sb = (x) => profAt(env.prof[i.id], x);
+      const later = [60, 120, 180, 240].map((d) => t + d).filter((x) => x < end).map(sb).filter((v) => v != null);
+      const now0 = sb(t + tr);
+      if (now0 != null && later.length) deal = now0 - later.reduce((a, b) => a + b, 0) / later.length;
     }
     let score = (i.pri || 1) * 60 + deal * 0.8 - cost * 0.5;
     if (i.type === 'pass') score += 25;
@@ -577,6 +585,7 @@ function plan(t, area, done, env, pick) {
     if (wx && wx.lv) score -= wx.lv === 2 ? 150 : 40;
     if (S.rain) score += i.outdoor ? -100 : i.indoor ? 30 : 0; // 雨の日モード：屋外は後回し、屋内を先に
     if (env.c.dayKey === 'd4' && !i.days.includes('d5')) score += 60; // 11/4にしかないものを先に（両日のものは11/5に回せる）
+    if (i.show && done.has(i.follows)) score += 300; // 軽食のすぐあとにショー
     if (i.opt) score -= 40; // 「時間があれば」のものは、決めたものより後
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
@@ -618,6 +627,7 @@ function reasonOf(r, env) {
   else if (i.first === env.c.dayKey && r.finish - r.cost < env.c.start + 30) p.push('開園直後がいちばん空く（10/11は開園時15分→20分後110分）');
   else if (i.type === 'pass') p.push('エクスプレス・パスで短い待ち');
   else if (i.type === 'meal') p.push(toMin(i.by) - r.finish < 0 ? `${i.by}の目標を過ぎそう。早めに食事` : `${i.by}までに食事`);
+  else if (i.show) p.push('軽食のあと、ショーで休憩（公演時刻は公式アプリで見る）');
   else if (i.type === 'event') p.push(`${i.after}から開催中`);
   else if (i.type === 'rest') p.push('空き時間に');
   else if (r.peak) {
@@ -923,8 +933,10 @@ function renderRules(env) {
       <li>時間指定に向けて出発する時刻 ＝ 時刻 − 移動 − 余裕5分。それまでに終わるものだけが候補</li>
       <li>11/5は7:45に着いて、そのまま入れるとして計算（公式は8:00開園、実際は7:30〜7:50に開く見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）。雨の日モードのときは行かない</li>
       <li>コナン・チェンソーマンは9:00から、SINGは10:30からとして計算（10/11の記録で最初に数字が出た時刻）</li>
-      <li>11/5のロックンロール・ショーは仮に13:00。昼の軽食はその直前。当日の朝に公式アプリで公演時刻を見て、設定で直す</li>
-      <li>2回目（ハリポタ・フライング・バックドロップ・ジュラ闇・ミニオン）は18:30以降、時間が空いたら入れる。入らなくても警告は出さない</li>
+      <li>時間指定のないパス（ハリポタ・フライングなど）は、スタンバイの待ちが長い時間（昼）に使う。朝の空いている時間はスタンバイに</li>
+      <li>11/5の最後は、閉園の5分前（21:55）までに並べば乗れるとして計算（乗り終わるのは閉園後）</li>
+      <li>11/5のロックンロール・ショーは、昼の軽食のすぐあと（時刻は決めない。当日は公式アプリの公演時刻に合わせる）</li>
+      <li>2回目（フライング・ハリドリ・バックドロップ・ミッション）は、時間が空いたら入れる。入らなくても警告は出さない</li>
       <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
       <li>待ち時間は、毎日の記録から「平日の30分ごとの待ち」を集計して予測。当日は、今の待ちが記録より多いか少ないかで補正（先の時刻ほど記録に近づける）</li>
       <li>「今並ぶのが得か」は、このあと1〜3時間の予測と比べる。後で長くなるものは今のうちに</li>
