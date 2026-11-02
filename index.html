@@ -101,6 +101,7 @@ a { color: var(--accent); }
 .tl2 li { display: flex; align-items: baseline; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 17px; }
 .tl2 time { flex: 0 0 3.2em; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
 .tl2 span { flex: 1; min-width: 0; }
+.tl2 small { display: block; font-size: 13px; font-weight: 600; color: var(--muted); }
 .tl2 em { font-style: normal; font-size: 14px; color: var(--muted); white-space: nowrap; }
 .tl2 li.fx { font-weight: 700; }
 .tl2 li.fx em { color: var(--warn); font-size: 16px; font-weight: 900; }
@@ -241,7 +242,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-01a';
+const APP_VERSION = '2026-11-03a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -578,8 +579,8 @@ function simulate(env, t0) {
   const done = new Set(env.done), tl = [];
   for (let k = 0; k < 80 && t < end; k++) {
     const r = plan(t, area, done, env, k === 0 ? env.chosen : null);
-    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time, depart: Math.min(t, r.depart) });
-    else if (r.kind === 'go') tl.push({ from: t, to: r.finish, item: r.item, wait: r.wait });
+    if (r.kind === 'fixed') tl.push({ from: t, to: r.finish, item: r.item, at: r.time, depart: Math.min(t, r.depart), travel: r.travel });
+    else if (r.kind === 'go') tl.push({ from: t, to: r.finish, item: r.item, wait: r.wait, travel: r.travel });
     else if (r.kind === 'wait' || r.kind === 'move') {
       const nt = Math.max(t + 1, r.kind === 'wait' ? r.until : r.depart);
       if (nt - t >= 5) tl.push({ from: t, to: nt, free: true });
@@ -659,7 +660,9 @@ function render() {
     const i = r.item;
     const tag = i.type === 'pass' ? '<span class="tag pass">パス</span>' : '';
     const what = i.type === 'pass' ? 'パスで乗る' : isRide(i) ? `待ち${r.wait}分` : `${i.dur}分くらい`;
+    const go = c.now < c.start ? `<b>${fmt(c.start)}</b>に出発` : '今すぐ出発';
     h = `<p class="lead">${lead}</p><h2>${tag}${esc(i.name)}</h2>
+      <p class="facts">${go}<span class="dot">・</span>移動${r.travel}分</p>
       <p class="facts">${what}<span class="dot">・</span><b>${fmt(r.finish)}</b>ごろ終わる</p>
       <p class="why">${esc(reasonOf(r, env))}</p>
       ${risk(r.ok, r.nf ? `${fmt(r.nf.time)}の${name(r.nf.i)}` : '退園')}
@@ -675,7 +678,7 @@ function render() {
       <button class="big" data-act="done" data-id="${r.item.id}">終わった</button>`;
   } else if (r.kind === 'move') {
     h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
-      <p class="facts"><b>${fmt(r.depart)}</b>まで</p>
+      <p class="facts"><b>${fmt(r.depart)}</b>に出発 → ${name(r.item)}</p>
       <p class="why">今から並ぶと、上の時間指定に間に合いません。</p>`;
   } else if (r.kind === 'wait') {
     h = `<p class="lead">${lead}</p><h2>休憩・写真</h2>
@@ -784,8 +787,8 @@ function renderPlan(env, t0, now) {
   const li = rows.map((x) => x.free
     ? `<li class="free"><time>${fmt(x.from)}</time><span>休憩・写真</span></li>`
     : x.at != null
-      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b></span><em><i class="pass">パス</i> 🔒${fmt(x.at)}</em></li>`
-      : `<li><time>${fmt(x.from)}</time><span>${name(x.item)}</span>${x.item.type === 'pass' ? '<em><i class="pass">パス</i></em>' : x.wait ? `<em>待ち${x.wait}分</em>` : ''}</li>`).join('');
+      ? `<li class="fx"><time>${fmt(x.depart)}</time><span>出発 → <b>${name(x.item)}</b><small>移動${x.travel}分</small></span><em><i class="pass">パス</i> 🔒${fmt(x.at)}</em></li>`
+      : `<li><time>${fmt(x.from)}</time><span>出発 → ${name(x.item)}<small>移動${x.travel}分</small></span>${x.item.type === 'pass' ? '<em><i class="pass">パス</i></em>' : x.wait ? `<em>待ち${x.wait}分</em>` : ''}</li>`).join('');
   const span = env.c.dayKey === 'd4' ? '2日間で' : '';
   const verdict = left.length
     ? `<p class="verdict bad">⚠ このままだと${span}入らない：${left.map(name).join('、')}</p>
@@ -805,7 +808,7 @@ function renderPlan(env, t0, now) {
     ${verdict}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
     <p class="note">${wxNote}</p>
-    <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日${statDays('wt') >= 2 ? `。旅行と同じ水・木の${statDays('wt')}日分を重く` : ''}）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。</p>`;
+    <p class="note">${STATS ? `待ち時間は、毎日の記録（平日${statDays('weekday')}日・休日${statDays('holiday')}日${statDays('wt') >= 2 ? `。旅行と同じ水・木の${statDays('wt')}日分を重く` : ''}）から時間帯ごとに予測${env.useEst ? '' : 'し、今の混み具合で補正'}しています。` : env.useEst ? '目安の待ち時間で計算しています。' : '今の待ち時間が続くとして計算しています。'}1つ終わるごとに${S.gap}分の余裕をみています。左の時刻は、そこへ向かって動き始める時刻です。</p>`;
 }
 
 // 開園と到着の目安：毎日の記録（実際に動き出した時刻・開園直後の伸び方）と、公開情報の目安を合わせる
