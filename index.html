@@ -215,7 +215,7 @@ footer a { font-weight: 700; }
 
 /* ============ 予定データ ============ */
 const DAYS = {
-  d4: { key: 'd4', date: '2026-11-04', label: '11/4（水）', start: '15:00', end: '20:00', endText: '20:00 退園 → シティウォークの551へ', startArea: 'ハリウッド' },
+  d4: { key: 'd4', date: '2026-11-04', label: '11/4（水）', start: '15:00', end: '21:00', endText: '21:00 退園 → シティウォークの551へ', startArea: 'ハリウッド' },
   d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:45', open: '07:45', end: '22:00', endText: '22:00 閉園。出口へ（ホテル門限24時）', startArea: 'ハリウッド' },
 };
 // type: fixed=時間指定 / pass=エクスプレス / standby=スタンバイ / event=イベント / meal=食事 / rest=休憩
@@ -224,30 +224,33 @@ const ITEMS = [
   { id: 'sadako',  name: '貞子', days: ['d4'], type: 'pass', dur: 15, est: 10, pri: 3, qt: 12324, area: 'ハリウッド' },
   { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', until: '16:40', dur: 30, area: 'ハリウッド' },
   { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', chip: 'ハリドリ', outdoor: true, days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
-  { id: 'dinner4', name: '夕食（軽め）', days: ['d4'], type: 'meal', after: '17:00', by: '18:30', dur: 30, pri: 3, area: null },
+  { id: 'dinner4', name: '軽食', days: ['d4'], type: 'meal', after: '17:00', by: '20:30', dur: 15, pri: 3, area: null },
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
   { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
-  { id: 'lunch',   name: '昼食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 45, pri: 3, area: null },
+  { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 20, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'photo',   name: '写真・グッズ・USJ土産', chip: '写真・グッズ', days: ['d5'], type: 'rest', after: '12:00', dur: 45, pri: 2, area: null },
-  { id: 'dinner5', name: '夕食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 40, pri: 3, area: null },
+  { id: 'dinner5', name: '夕方の軽食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 20, pri: 3, area: null },
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'ゾンビ（ハロウィーン・ナイト）', chip: 'ゾンビ', days: ['d5'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
+  // おすすめで追加（opt：時間があれば。入らなくても「入らない」の警告は出さない）：ジョーズ（昼の版は17時ごろまで。夜はハロウィーン版に変わる）・ミニオン・ブラスト（撃って点数を競う。待ち15〜35分）
+  { id: 'jaws',    name: 'ジョーズ', outdoor: true, days: ['d4', 'd5'], type: 'standby', before: '16:30', dur: 15, est: 45, pri: 2, opt: true, qt: 12068, area: 'アミティ' },
+  { id: 'blast',   name: 'ヴィランズ・コン ミニオン・ブラスト', short: 'ミニオン・ブラスト', chip: 'ミニオン・ブラスト', days: ['d4', 'd5'], type: 'standby', dur: 15, est: 25, pri: 1, opt: true, qt: 14918, area: 'ミニオン・パーク' },
   { id: 'factory', name: 'ファクトリー', days: ['d5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03d';
+const APP_VERSION = '2026-11-03e';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -546,6 +549,7 @@ function plan(t, area, done, env, pick) {
       if (a + env.waitAt(i, a) + i.dur <= limit && (!next || a - tr < next.at)) next = { at: a - tr, item: i };
       continue;
     }
+    if (i.before && t + tr > toMin(i.before)) continue; // その時刻までに並び始められないもの
     const finish = t + cost;
     if (finish > limit && i.id !== pick) continue;
     if (i.type !== 'meal' && i.id !== pick && meals.some((m) => Math.max(finish, toMin(m.after)) + +S.same + m.dur > toMin(m.by))) continue;
@@ -566,6 +570,7 @@ function plan(t, area, done, env, pick) {
     if (openRush && !(wx && wx.lv === 2) && !(S.rain && i.outdoor)) score += 500; // 開園直後にまっすぐ行くもの（大雨・強風の予報や雨の日モードなら、止まっている可能性が高いのでやめる）
     if (wx && wx.lv) score -= wx.lv === 2 ? 150 : 40;
     if (S.rain) score += i.outdoor ? -100 : i.indoor ? 30 : 0; // 雨の日モード：屋外は後回し、屋内を先に
+    if (env.c.dayKey === 'd4' && !i.days.includes('d5')) score += 60; // 11/4にしかないものを先に（両日のものは11/5に回せる）
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
     cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak, wx });
@@ -756,8 +761,10 @@ function renderList(env) {
     if (ride) { const w = env.w[i.id]; const p0 = profAt(env.prof[i.id], env.nowT); meta.push(`待ち <b>${w.wait}分</b>（${w.src}${w.suspect ? '・止まっているかも' : ''}）`); if (p0 != null) meta.push(`いつもは${round5(p0)}分`); }
     if (i.est != null) meta.push(`目安${i.est}分`);
     if (i.after) meta.push(`${i.after}以降`);
+    if (i.before) meta.push(`${i.before}までに並ぶ`);
     if (i.by) meta.push(`${i.by}までに`);
-    if (i.pri) meta.push(`優先${PRI_LABEL[i.pri]}`);
+    if (i.opt) meta.push('おすすめ（時間があれば）');
+    else if (i.pri) meta.push(`優先${PRI_LABEL[i.pri]}`);
     if (i.days.length === 2) meta.push('両日');
     const carried = !st && env.carry && env.carry.has(i.id);
     const status = st === 'done' ? '<span class="tag ok">済</span>' : st === 'skip' ? '<span class="tag">あきらめ</span>' : carried ? '<span class="tag">11/4に乗る</span>' : p ? `<span class="tag fixed">休止中${p === 'auto' ? '（自動）' : ''}</span>` : '';
@@ -788,7 +795,7 @@ function tryPlan(env, t0, { drop = [], pick = null, quick = null, gap = null } =
   try {
     const e = quick != null ? buildEnv(env.c, env.useEst) : Object.assign({}, env);
     e.done = new Set([...env.done, ...drop]); e.area = env.area; e.chosen = pick || env.chosen;
-    return leftAfter(e, simulate(e, t0));
+    return leftAfter(e, simulate(e, t0)).filter((i) => !i.opt);
   } finally { [S.quick, S.gap] = saved; }
 }
 // 入らなかったときの痛さ。時間指定はいちばん痛く、優先度が高いほど痛い
@@ -841,7 +848,8 @@ function renderPlan(env, t0, now) {
   // 先頭は「いま」のカードと同じなので省く
   const rows = sim.tl.slice(now.kind === 'end' ? 0 : 1).filter((x) => !x.free || x.to - x.from >= 10);
   const moved = env.c.dayKey === 'd4' ? sim.left.filter((i) => i.days.includes('d5')) : [];
-  const left = leftAfter(env, sim);
+  const leftAll = leftAfter(env, sim);
+  const left = leftAll.filter((i) => !i.opt), optLeft = leftAll.filter((i) => i.opt);
   const fixes = left.length ? rescuesFor(env, t0, left) : [];
   const li = rows.map((x) => x.free
     ? `<li class="free"><time>${fmt(x.from)}</time><span>休憩・写真</span></li>`
@@ -865,6 +873,7 @@ function renderPlan(env, t0, now) {
   $('plan').innerHTML = `<ol class="tl2">${li}
       <li class="end"><time>${env.c.day.end}</time><span>${esc(env.c.day.endText.replace(/^\d+:\d+\s*/, ''))}</span></li></ol>
     ${verdict}
+    ${optLeft.length ? `<p class="note">おすすめの ${optLeft.map(name).join('、')} は、今のところ入らない見込み（時間が空いたら）</p>` : ''}
     ${moved.length ? `<p class="note">11/4に入らない ${moved.map(name).join('、')} は11/5に回す</p>` : ''}
     ${env.carry && env.carry.size ? `<p class="note">${env.items.filter((i) => env.carry.has(i.id)).map(name).join('、')} は11/4に乗る（乗った）ので、11/5の予定に入れていません</p>` : ''}
     <p class="note">${wxNote}</p>
@@ -907,6 +916,7 @@ function renderRules(env) {
       <li>時間指定に向けて出発する時刻 ＝ 時刻 − 移動 − 余裕5分。それまでに終わるものだけが候補</li>
       <li>11/5は7:45に着いて、そのまま入れるとして計算（公式は8:00開園、実際は7:30〜7:50に開く見込み）。開園直後はまっすぐバックドロップ（10/11は開園時15分→20分後110分）。雨の日モードのときは行かない</li>
       <li>コナン・チェンソーマンは9:00から、SINGは10:30からとして計算（10/11の記録で最初に数字が出た時刻）</li>
+      <li>ジョーズは16:30までに並ぶ（昼の版は17時ごろまで。夜はハロウィーン版）</li>
       <li>並ぶと食事が締め切りに間に合わなくなるものは選ばない</li>
       <li>待ち時間は、毎日の記録から「平日の30分ごとの待ち」を集計して予測。当日は、今の待ちが記録より多いか少ないかで補正（先の時刻ほど記録に近づける）</li>
       <li>「今並ぶのが得か」は、このあと1〜3時間の予測と比べる。後で長くなるものは今のうちに</li>
