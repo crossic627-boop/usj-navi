@@ -9,6 +9,7 @@
 - `usj-navi.ics` … 時間指定のカレンダー（初期の時刻。アプリのボタンからも作れる）
 - `scripts/fetch-waits.mjs` … 待ち時間を取得して `waits.json` に保存し、`history/` に記録を追記
 - `scripts/build-stats.mjs` … `history/` を集計して `stats.json` を作る
+- `scripts/check-rides.mjs` … ルートの乗り物が動いているか（運休・途中休止・遅い開始）を `history/` から調べる（`node scripts/check-rides.mjs 日数`）
 - `sw.js` … 電波がなくても開けるように、ページとデータをスマホに保存する
 - `manifest.json`・`icon-180.png`・`icon-512.png` … ホーム画面に追加したときの名前とアイコン
 - `scripts/dev-server.mjs` … PCで試す用（`node scripts/dev-server.mjs` → http://localhost:8000/）
