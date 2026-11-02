@@ -112,6 +112,11 @@ a { color: var(--accent); }
 #plan .verdict.good { color: var(--ok); }
 #plan .verdict.bad { color: var(--warn); }
 #plan .note { margin: 4px 0 0; }
+.fixes { margin: 10px 0 0; padding: 12px; border: 2px solid var(--warn); border-radius: 14px; }
+.fixes h4 { margin: 0 0 8px; font-size: 15px; font-weight: 800; }
+.fixes button { display: block; width: 100%; min-height: 48px; margin-top: 8px; padding: 8px 12px; border: 2px solid var(--accent); border-radius: 12px; background: var(--bg); color: inherit; font-size: 16px; font-weight: 800; text-align: left; }
+.fixes button small { display: block; font-size: 13px; font-weight: 600; color: var(--muted); }
+.fixes .good { color: var(--ok); }
 
 /* 時間指定の確認 */
 .ask { background: var(--warn-bg); border: 2px solid var(--warn); border-radius: 14px; padding: 12px; margin-top: 12px; }
@@ -242,7 +247,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03b';
+const APP_VERSION = '2026-11-03c';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -251,7 +256,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
-const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, rain: false, times: {}, trialLive: false, pace: 1, gap: 5 };
+const DEFAULT_SETTINGS = { day: 'auto', fixTime: '', same: 3, diff: 10, tired: false, rain: false, quick: false, times: {}, trialLive: false, pace: 1, gap: 5 };
 let S = Object.assign({}, DEFAULT_SETTINGS, LS.get(K.settings, {}));
 S.times = S.times || {};
 const saveS = () => LS.set(K.settings, S);
@@ -440,10 +445,11 @@ function waitOf(i, st, useEst) {
   if (!useEst && r && r.open !== false && typeof r.wait === 'number') return { wait: r.wait, src: '自動' };
   return { wait: i.est, src: '目安' };
 }
+const QUICK_DUR = 20; // 「食事・写真を短く」のときの時間
 // useEst（お試し・翌日の予測）のときは、目安の待ちで計算し、今の休止情報も使わない
 function buildEnv(c, useEst = c.trial && !S.trialLive) {
   const st = loadState(c.trial);
-  const items = ITEMS.filter((i) => i.days.includes(c.dayKey));
+  const items = ITEMS.filter((i) => i.days.includes(c.dayKey)).map((i) => S.quick && (i.type === 'meal' || i.type === 'rest') ? Object.assign({}, i, { dur: Math.min(i.dur, QUICK_DUR) }) : i);
   const paused = new Map();
   const w = {};
   for (const i of items) {
@@ -750,20 +756,66 @@ function renderList(env) {
   }).join('');
 }
 
-/// 入らない「優先の高いもの」があるとき、優先の低い予定を1つ削れば入るかを計算し直す
-function suggestCuts(env, t0, sim) {
-  const out = [];
-  const want = sim.left.filter((i) => i.type !== 'fixed' && i.pri).sort((a, b) => b.pri - a.pri);
-  const planned = sim.tl.filter((x) => x.item && x.item.type !== 'fixed' && x.item.pri).map((x) => x.item);
-  for (const w of want) {
-    const cuts = planned.filter((p) => p.pri < w.pri && !out.some((o) => o.cut === p)).sort((a, b) => a.pri - b.pri);
-    for (const p of cuts) {
-      const sim2 = simulate(Object.assign({}, env, { done: new Set([...env.done, p.id]) }), t0);
-      if (sim2.tl.some((x) => x.item && x.item.id === w.id)) { out.push({ cut: p, gain: w }); break; }
-    }
-    if (out.length >= 2) break;
-  }
-  return out;
+// 11/4 は 11/5 まで続けて計算する（両日のものは 11/5 に回せるため）。最後まで入らないものを返す
+function leftAfter(env, sim) {
+  if (env.c.dayKey !== 'd4') return sim.left;
+  const d5 = DAYS.d5;
+  const c5 = Object.assign({}, env.c, { dayKey: 'd5', day: d5, start: toMin(d5.open || d5.start), end: toMin(d5.end) });
+  const env5 = buildEnv(c5, true);
+  env5.done = new Set([...sim.done]); env5.area = d5.startArea; env5.chosen = null;
+  return [...sim.left.filter((i) => !i.days.includes('d5')), ...simulate(env5, c5.start).left];
+}
+// 条件を変えて計算し直す。drop：あきらめるもの / pick：次に行くもの / quick：食事・写真を短く / gap：1つごとの余裕
+function tryPlan(env, t0, { drop = [], pick = null, quick = null, gap = null } = {}) {
+  const saved = [S.quick, S.gap];
+  if (quick != null) S.quick = quick;
+  if (gap != null) S.gap = gap;
+  try {
+    const e = quick != null ? buildEnv(env.c, env.useEst) : Object.assign({}, env);
+    e.done = new Set([...env.done, ...drop]); e.area = env.area; e.chosen = pick || env.chosen;
+    return leftAfter(e, simulate(e, t0));
+  } finally { [S.quick, S.gap] = saved; }
+}
+// 入らなかったときの痛さ。時間指定はいちばん痛く、優先度が高いほど痛い
+const lossOf = (list) => list.reduce((s, i) => s + (i.type === 'fixed' ? 30 : i.pri === 3 ? 9 : i.pri === 2 ? 4 : 1), 0);
+// 入らないものがあるときの解決策を、効果の大きい順に並べる（手間のかからないものを先に）
+function rescueOptions(env, t0, left) {
+  const base = lossOf(left), opts = [];
+  const add = (o, l, effort) => { const loss = lossOf(l) + lossOf(o.drop || []); if (loss < base) opts.push(Object.assign(o, { left: l, loss, effort })); };
+  const open = eligible(env, env.done).filter((i) => i.type !== 'fixed');
+  for (const i of open) if (i.id !== env.chosen) add({ kind: 'pick', item: i }, tryPlan(env, t0, { pick: i.id }), 0);
+  if (!S.quick) add({ kind: 'quick' }, tryPlan(env, t0, { quick: true }), 1);
+  if (+S.gap > 0) add({ kind: 'gap' }, tryPlan(env, t0, { gap: 0 }), 2);
+  const inLeft = new Set(left.map((i) => i.id));
+  const planned = open.filter((i) => !inLeft.has(i.id));
+  for (const i of planned) add({ kind: 'drop', drop: [i] }, tryPlan(env, t0, { drop: [i.id] }), 3);
+  const light = planned.filter((i) => i.pri < 3);
+  for (let x = 0; x < light.length; x++) for (let y = x + 1; y < light.length; y++) add({ kind: 'drop', drop: [light[x], light[y]] }, tryPlan(env, t0, { drop: [light[x].id, light[y].id] }), 4);
+  opts.sort((a, b) => a.loss - b.loss || a.effort - b.effort);
+  const seen = new Set(), best = [];
+  for (const o of opts) { if (seen.has(o.kind) || best.length >= 3) continue; seen.add(o.kind); best.push(o); }
+  const giveUp = left.filter((i) => i.type !== 'fixed');
+  if (giveUp.length) best.push({ kind: 'giveup', drop: giveUp, left: left.filter((i) => i.type === 'fixed') });
+  return best;
+}
+// 20秒ごとの再描画のたびに計算しないよう、条件が同じなら前の結果を使う
+let rescues = [], rescueKey = '';
+function rescuesFor(env, t0, left) {
+  const key = JSON.stringify([env.c.dayKey, t0, [...env.done], [...env.paused.keys()], env.area, env.chosen, env.st.overrides, W.updatedAt, S.quick, S.gap, S.tired, S.rain, S.same, S.pace, S.times, left.map((i) => i.id)]);
+  if (key !== rescueKey) { rescueKey = key; rescues = rescueOptions(env, t0, left); }
+  return rescues;
+}
+function rescueHtml(list) {
+  const name = (i) => esc(i.chip || short(i));
+  const names = (a) => a.map(name).join('、');
+  const result = (o) => o.left.length ? `→ あと ${names(o.left)} が入らない` : '<span class="good">→ 全部入る</span>';
+  const line = (o) => o.kind === 'pick' ? `順番を変える：次は${name(o.item)}へ`
+    : o.kind === 'quick' ? `食事・写真を短くする（${QUICK_DUR}分ずつ）`
+    : o.kind === 'gap' ? 'トイレ・寄り道なしで急ぐ（余裕0分で計算）'
+    : `${names(o.drop)}をあきらめる`;
+  const sub = (o) => o.kind === 'giveup' ? (o.left.length ? result(o) : '<span class="good">→ 残りは全部入る</span>') : result(o);
+  return `<div class="fixes"><h4>解決策（押すと計算し直します）</h4>${list.map((o, n) => `<button data-act="rescue" data-i="${n}">${line(o)}<small>${sub(o)}</small></button>`).join('')}
+    <p class="note">もう乗ったものがあれば、「待ち時間を見る・直す」で「済」を押すと計算し直します。</p></div>`;
 }
 
 // 「このあと」：今日の残りを、乗り換え案内のように上から並べる
@@ -773,17 +825,9 @@ function renderPlan(env, t0, now) {
   const sim = simulate(env, t0);
   // 先頭は「いま」のカードと同じなので省く
   const rows = sim.tl.slice(now.kind === 'end' ? 0 : 1).filter((x) => !x.free || x.to - x.from >= 10);
-  let left = sim.left, moved = [], cuts = suggestCuts(env, t0, sim);
-  if (env.c.dayKey === 'd4') { // 11/4 は 11/5 まで続けて計算する（両日のものは 11/5 に回せるため）
-    moved = sim.left.filter((i) => i.days.includes('d5'));
-    const d5 = DAYS.d5;
-    const c5 = Object.assign({}, env.c, { dayKey: 'd5', day: d5, start: toMin(d5.open || d5.start), end: toMin(d5.end) });
-    const env5 = buildEnv(c5, true);
-    env5.done = new Set([...sim.done]); env5.area = d5.startArea; env5.chosen = null;
-    const sim5 = simulate(env5, c5.start);
-    left = [...sim.left.filter((i) => !i.days.includes('d5')), ...sim5.left];
-    cuts = [...cuts.filter((x) => !x.gain.days.includes('d5')), ...suggestCuts(env5, c5.start, sim5)].slice(0, 2);
-  }
+  const moved = env.c.dayKey === 'd4' ? sim.left.filter((i) => i.days.includes('d5')) : [];
+  const left = leftAfter(env, sim);
+  const fixes = left.length ? rescuesFor(env, t0, left) : [];
   const li = rows.map((x) => x.free
     ? `<li class="free"><time>${fmt(x.from)}</time><span>休憩・写真</span></li>`
     : x.at != null
@@ -792,7 +836,7 @@ function renderPlan(env, t0, now) {
   const span = env.c.dayKey === 'd4' ? '2日間で' : '';
   const verdict = left.length
     ? `<p class="verdict bad">⚠ このままだと${span}入らない：${left.map(name).join('、')}</p>
-       ${cuts.map((x) => `<p class="note">→ ${name(x.cut)}を削れば、${name(x.gain)}が入る見込み</p>`).join('')}`
+       ${fixes.length ? rescueHtml(fixes) : ''}`
     : `<p class="verdict good">✅ この流れなら${span}全部回れる</p>`;
   // その日の天気のまとめ（雨・風の時間をまとめて出す）
   let wxNote = '天気予報は、旅行の約2週間前（10/20ごろ）から反映されます。';
@@ -921,6 +965,22 @@ document.addEventListener('click', (e) => {
       if (v.trim() === '' || isNaN(n)) delete st.overrides[id];
       else st.overrides[id] = { wait: Math.max(0, n), at: Date.now() };
     });
+  } else if (act === 'rescue') {
+    const o = rescues[+b.dataset.i];
+    if (!o) return;
+    showAlts = false;
+    if (o.kind === 'pick') {
+      const undo = mutate((st) => { st.chosen = o.item.id; });
+      toast(`次は${short(o.item)}にしました`, undo);
+    } else if (o.kind === 'quick' || o.kind === 'gap') {
+      const before = [S.quick, S.gap];
+      if (o.kind === 'quick') S.quick = true; else S.gap = 0;
+      saveS(); render();
+      toast(o.kind === 'quick' ? `食事・写真を${QUICK_DUR}分にしました` : '余裕0分で計算します', () => { [S.quick, S.gap] = before; saveS(); render(); });
+    } else {
+      const undo = mutate((st, c) => { for (const i of o.drop) { st.status[i.id] = 'skip'; st.at[i.id] = Date.now(); st.doneMin[i.id] = c.now; st.doneDay[i.id] = c.dayKey; if (st.chosen === i.id) st.chosen = null; } });
+      toast(`${o.drop.map(short).join('、')}をあきらめにしました`, undo);
+    }
   } else if (act === 'trialLive') {
     S.trialLive = !S.trialLive; saveS(); render();
   } else if (act === 'notify') {
@@ -1082,6 +1142,8 @@ function renderSettings() {
   $('settings').innerHTML = `<div class="set">
     <label><span><b>疲れたモード</b><br><span class="note">優先度「低」を外す</span></span><input type="checkbox" id="sTired" ${S.tired ? 'checked' : ''}></label>
     <label><span><b>雨の日モード</b><br><span class="note">屋外（バックドロップ・ハリドリ・フライング）を後回しにして、屋内を先に</span></span><input type="checkbox" id="sRain" ${S.rain ? 'checked' : ''}></label>
+    <label><span><b>食事・写真を短く</b><br><span class="note">${QUICK_DUR}分ずつで計算する</span></span><input type="checkbox" id="sQuick" ${S.quick ? 'checked' : ''}></label>
+    <label>1つごとの余裕<span><input type="number" id="sGap" min="0" max="30" value="${S.gap}"> 分</span></label>
     <label>日付<select id="sDay">
       <option value="auto">自動（当日に切り替え）</option><option value="d4">11/4（水）</option><option value="d5">11/5（木）</option></select></label>
     <label><span>時刻を固定<br><span class="note">お試し用。空欄で今の時刻</span></span>
@@ -1098,6 +1160,8 @@ function renderSettings() {
   const upd = (fn) => { fn(); saveS(); render(); };
   $('sTired').onchange = (e) => upd(() => { S.tired = e.target.checked; });
   $('sRain').onchange = (e) => upd(() => { S.rain = e.target.checked; });
+  $('sQuick').onchange = (e) => upd(() => { S.quick = e.target.checked; });
+  $('sGap').onchange = (e) => upd(() => { S.gap = Math.max(0, +e.target.value || 0); });
   $('sDay').onchange = (e) => upd(() => { S.day = e.target.value; });
   $('sTime').onchange = (e) => upd(() => { S.fixTime = e.target.value; });
   $('sTimeClear').onclick = () => { $('sTime').value = ''; upd(() => { S.fixTime = ''; }); };
