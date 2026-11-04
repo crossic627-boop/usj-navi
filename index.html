@@ -247,13 +247,13 @@ const ITEMS = [
   { id: 'hdr2',    name: 'ハリウッド・ドリーム・ザ・ライド（2回目・スタンバイ）', short: 'ハリドリ（2回目）', chip: 'ハリドリ2回目', outdoor: true, opt: true, days: ['d5'], type: 'standby', dur: 10, est: 85, pri: 1, qt: 7077, area: 'ハリウッド' },
   { id: 'bd2',     name: 'バックドロップ（2回目）', chip: 'バックドロップ2回目', outdoor: true, opt: true, follows: 'backdrop', days: ['d5'], type: 'standby', dur: 10, est: 90, pri: 1, qt: 12070, area: 'ハリウッド' },
   { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', dur: 30, est: 40, pri: 1, area: 'ミニオン・パーク' },
-  { id: 'factory', name: 'ファクトリー', days: ['d4', 'd5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
+  { id: 'factory', name: 'ファクトリー', now: 'd4', days: ['d4', 'd5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-04e';
+const APP_VERSION = '2026-11-04f';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -564,7 +564,8 @@ function plan(t, area, done, env, pick, prev = env.prev) {
     const finish = t + cost;
     // 11/5の最後は、閉園（22:00）の5分前までに並べば乗れる（終わるのは閉園後でもよい）
     const lastCall = !nf && env.c.dayKey === 'd5' && i.type === 'standby' && t + tr <= end - 5;
-    if (finish > limit && i.id !== pick && !lastCall) continue;
+    const nowQ = i.now === env.c.dayKey; // いま並んでいるもの
+    if (finish > limit && i.id !== pick && !lastCall && !nowQ) continue;
     if (i.type !== 'meal' && i.id !== pick && meals.some((m) => Math.max(finish, toMin(m.after)) + +S.same + m.dur > toMin(m.by))) continue;
     // 間に合う確率：本当の締め切り（時間指定の時刻 − 移動）までに終わる見込み
     const src = env.w[i.id].src;
@@ -594,6 +595,7 @@ function plan(t, area, done, env, pick, prev = env.prev) {
     if (i.show && done.has(i.follows)) score += 300; // 軽食のすぐあとにショー
     if (i.opt) score -= 40;
     score -= tr * 1.5; // 遠くへ歩くほど下げる（同じエリアでまとめる） // 「時間があれば」のものは、決めたものより後
+    if (i.now === env.c.dayKey) score += 1000; // その日、いま並んでいるもの（11/4のファクトリー）を先頭に
     if (i.id === pick) score += 10000;
     score -= (1 - ok) * 60; // 間に合わない危なさの分だけ下げる
     cands.push({ item: i, travel: tr, wait, cost, finish, score, src, ok, deal, peak, wx });
