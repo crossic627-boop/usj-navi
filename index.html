@@ -254,7 +254,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-03i';
+const APP_VERSION = '2026-11-04a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -652,7 +652,7 @@ function reasonOf(r, env) {
   if (r.wx && r.wx.lv) p.push(`${wxWord(r.wx)}の予報。屋外なので止まるかも`);
   if (S.rain && i.outdoor) p.push('雨の日モード：屋外なので止まるかも');
   else if (S.rain && i.indoor) p.push('雨の日モード：屋内なので雨でもだいじょうぶ');
-  p.push(r.nf ? `${fmt(r.nf.time)}の${short(r.nf.i)}に間に合う` : `${env.c.day.end}の退園までに終わる`);
+  if (!(r.ok < 0.8)) p.push(r.nf ? `${fmt(r.nf.time)}の${short(r.nf.i)}に間に合う` : `${env.c.day.end}の退園までに終わる`); // 危ないときは「間に合わないかも」の警告だけ出す
   return p.join('。');
 }
 
