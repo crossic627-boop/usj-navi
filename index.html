@@ -225,15 +225,16 @@ const ITEMS = [
   { id: 'sadako',  name: '貞子', days: ['d4'], type: 'pass', dur: 15, est: 10, pri: 3, qt: 12324, area: 'ハリウッド' },
   { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', until: '16:40', dur: 30, area: 'ハリウッド' },
   { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', chip: 'ハリドリ', outdoor: true, days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
-  { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', show: true, days: ['d4'], type: 'fixed', time: '20:50', until: '20:50', dur: 15, area: null }, // 公式アプリ：19:20・19:50・20:20・20:50。ジュラ闇・コナンのあとの20:50
+  { id: 'zombie4', name: 'ゾンビ・デ・ダンス（パークワイド）', chip: 'ゾンビ', opt: true, days: ['d4'], type: 'event', after: '19:20', dur: 15, pri: 2, area: null }, // 19:20・19:50・20:20・20:50。どこにいても見られるので、SINGを出たところで
+  { id: 'shop4',   name: 'お土産（会社用・自分用）', chip: 'お土産', days: ['d4'], type: 'rest', after: '20:00', dur: 15, pri: 2, area: 'ハリウッド' }, // 入口近くのお店。1回3,000円以上・Oliveのタッチ決済・領収書
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
-  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
-  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', pref: 'd4', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
+  { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', pref: 'd5', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
+  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', show: true, seat: true, indoor: true, days: ['d4'], type: 'fixed', time: '18:10', until: '18:15', dur: 30, area: 'ハリウッド' }, // 11/4 18:10の回に入る
   { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 20, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
-  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
+  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', pref: 'd4', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'dinner5', name: '夕方の軽食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 20, pri: 3, area: null },
@@ -247,13 +248,13 @@ const ITEMS = [
   { id: 'hdr2',    name: 'ハリウッド・ドリーム・ザ・ライド（2回目・スタンバイ）', short: 'ハリドリ（2回目）', chip: 'ハリドリ2回目', outdoor: true, opt: true, days: ['d5'], type: 'standby', dur: 10, est: 85, pri: 1, qt: 7077, area: 'ハリウッド' },
   { id: 'bd2',     name: 'バックドロップ（2回目）', chip: 'バックドロップ2回目', outdoor: true, opt: true, follows: 'backdrop', days: ['d5'], type: 'standby', dur: 10, est: 90, pri: 1, qt: 12070, area: 'ハリウッド' },
   { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', dur: 30, est: 40, pri: 1, area: 'ミニオン・パーク' },
-  { id: 'factory', name: 'ファクトリー', now: 'd4', days: ['d4', 'd5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
+  { id: 'factory', name: 'ファクトリー', days: ['d4', 'd5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-04g';
+const APP_VERSION = '2026-11-04h';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
