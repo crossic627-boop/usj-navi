@@ -228,7 +228,7 @@ const ITEMS = [
   { id: 'zombie4', name: 'ゾンビ・デ・ダンス（パークワイド）', chip: 'ゾンビ', opt: true, days: ['d4'], type: 'event', after: '19:20', dur: 15, pri: 2, area: null }, // 19:20・19:50・20:20・20:50。どこにいても見られるので、SINGを出たところで
   { id: 'shop4',   name: 'お土産（会社用・自分用）', chip: 'お土産', days: ['d4'], type: 'rest', after: '20:00', dur: 15, pri: 2, area: 'ハリウッド' }, // 入口近くのお店。1回3,000円以上・Oliveのタッチ決済・領収書
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
-  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 60, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
+  { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 70, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', pref: 'd5', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', show: true, seat: true, indoor: true, days: ['d4'], type: 'fixed', time: '18:10', until: '18:15', dur: 30, area: 'ハリウッド' }, // 11/4 18:10の回に入る
   { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
@@ -254,7 +254,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05b';
+const APP_VERSION = '2026-11-05d';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -547,6 +547,7 @@ function plan(t, area, done, env, pick, prev = env.prev) {
   for (const i of pool) {
     if (i.type === 'fixed') continue;
     if (i.follows && !done.has(i.follows)) continue; // 2回目は1回目が済んでから
+    if (i.opt && i.type === 'standby' && i.est >= 60 && t < toMin('18:00') && env.waitAt(i, t) > 50) continue; // 2回目は、待ちが50分以下のときだけ（長い列に並ぶより、パスや別の乗り物を先に）
     if (i.seat && prevSeat && i.id !== pick) continue; // ショー（座って見るもの）を2つ続けない
     const tr = travel(area, i.area);
     // 開園直後は、まだ待ち時間データが届かないことが多い。最初に行くものは 10/11 の実績（開園時15分）に近い数字で見積もる
