@@ -254,7 +254,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-04a';
+const APP_VERSION = '2026-11-04b';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
@@ -438,7 +438,8 @@ const wxWord = (x) => (x.g >= 10 ? '強い風' : '') + (x.g >= 10 && (x.mm >= 0.
 /* ============ 判断の材料 ============ */
 function isPaused(i, st) {
   if (st.paused[i.id]) return 'manual';
-  if (i.qt && W.parkOpen) { const r = W.rides[i.qt]; if (r && r.open === false) return 'auto'; }
+  // 時間指定は自動で外さない（ジュラ闇のように夜だけ動くものは、昼は止まって見えるため）。本当に止まっていたら手で「休止」
+  if (i.qt && W.parkOpen && i.type !== 'fixed') { const r = W.rides[i.qt]; if (r && r.open === false) return 'auto'; }
   return false;
 }
 // 今の待ち時間。手入力は、それより新しい自動データが来るまで優先
