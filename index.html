@@ -240,7 +240,7 @@ const ITEMS = [
   { id: 'dinner5', name: '夕方の軽食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 20, pri: 3, area: null },
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'プレイバック・ゾンビ・デ・ダンス ～ハロウィーン・ホラー・ナイト15周年～', short: 'プレイバック・ゾンビ・デ・ダンス', chip: 'プレイバック・ゾンビ', show: true, days: ['d5'], type: 'fixed', time: '21:50', until: '21:50', dur: 20, area: null },
-  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', pref: 'd4', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
+  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', seat: true, indoor: true, days: ['d4'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
   // ショー：公演時刻は決めず、昼の軽食のすぐあとに入れる（ショーが休憩代わり）。当日は公式アプリの時刻に合わせる
   { id: 'rrshow',  name: 'ユニバーサル・モンスター・ライブ・ロックンロール・ショー', short: 'ロックンロール・ショー', chip: 'ロックンロール', show: true, seat: true, follows: 'lunch', days: ['d5'], type: 'event', dur: 30, pri: 2, area: 'ハリウッド' },
   // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
@@ -248,13 +248,13 @@ const ITEMS = [
   { id: 'hdr2',    name: 'ハリウッド・ドリーム・ザ・ライド（2回目・スタンバイ）', short: 'ハリドリ（2回目）', chip: 'ハリドリ2回目', outdoor: true, opt: true, days: ['d5'], type: 'standby', dur: 10, est: 85, pri: 1, qt: 7077, area: 'ハリウッド' },
   { id: 'bd2',     name: 'バックドロップ（2回目）', chip: 'バックドロップ2回目', outdoor: true, opt: true, follows: 'backdrop', days: ['d5'], type: 'standby', dur: 10, est: 90, pri: 1, qt: 12070, area: 'ハリウッド' },
   { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', dur: 30, est: 40, pri: 1, area: 'ミニオン・パーク' },
-  { id: 'factory', name: 'ファクトリー', days: ['d4', 'd5'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
+  { id: 'factory', name: 'ファクトリー', days: ['d4'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
 const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタンバイ', event: 'イベント', meal: '食事', rest: '休憩' };
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-04i';
+const APP_VERSION = '2026-11-05a';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
