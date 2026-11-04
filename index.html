@@ -234,13 +234,13 @@ const ITEMS = [
   { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 20, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
-  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', pref: 'd4', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
+  { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
   { id: 'dinner5', name: '夕方の軽食', days: ['d5'], type: 'meal', after: '16:30', by: '19:30', dur: 20, pri: 3, area: null },
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'プレイバック・ゾンビ・デ・ダンス ～ハロウィーン・ホラー・ナイト15周年～', short: 'プレイバック・ゾンビ・デ・ダンス', chip: 'プレイバック・ゾンビ', show: true, days: ['d5'], type: 'fixed', time: '21:50', until: '21:50', dur: 20, area: null },
-  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
+  { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', pref: 'd4', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
   // ショー：公演時刻は決めず、昼の軽食のすぐあとに入れる（ショーが休憩代わり）。当日は公式アプリの時刻に合わせる
   { id: 'rrshow',  name: 'ユニバーサル・モンスター・ライブ・ロックンロール・ショー', short: 'ロックンロール・ショー', chip: 'ロックンロール', show: true, seat: true, follows: 'lunch', days: ['d5'], type: 'event', dur: 30, pri: 2, area: 'ハリウッド' },
   // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
@@ -254,7 +254,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-04h';
+const APP_VERSION = '2026-11-04i';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
