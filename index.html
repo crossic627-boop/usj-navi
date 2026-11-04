@@ -216,7 +216,7 @@ footer a { font-weight: 700; }
 /* ============ 予定データ ============ */
 const DAYS = {
   d4: { key: 'd4', date: '2026-11-04', label: '11/4（水）', start: '15:00', end: '21:00', endText: '21:00 退園 → シティウォークの551へ', startArea: 'ハリウッド' },
-  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:45', open: '07:45', walkIn: 12, end: '22:00', endText: '22:00 閉園。出口へ（ホテル門限24時）', startArea: 'ハリウッド' },
+  d5: { key: 'd5', date: '2026-11-05', label: '11/5（木）', start: '07:45', open: '07:45', walkIn: 20, end: '22:00', endText: '22:00 閉園。出口へ（ホテル門限24時）', startArea: 'ハリウッド' },
 };
 // seat: 座って見るショー系（2つ続けない）
 // type: fixed=時間指定 / pass=エクスプレス / standby=スタンバイ / event=イベント / meal=食事 / rest=休憩
@@ -254,7 +254,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05e';
+const APP_VERSION = '2026-11-05f';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
