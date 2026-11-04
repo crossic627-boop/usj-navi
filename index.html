@@ -225,12 +225,11 @@ const ITEMS = [
   { id: 'sadako',  name: '貞子', days: ['d4'], type: 'pass', dur: 15, est: 10, pri: 3, qt: 12324, area: 'ハリウッド' },
   { id: 'bio',     name: 'バイオハザード レクイエム', short: 'バイオハザード', days: ['d4'], type: 'fixed', time: '16:10', until: '16:40', dur: 30, area: 'ハリウッド' },
   { id: 'hdr',     name: 'ハリウッド・ドリーム・ザ・ライド', chip: 'ハリドリ', outdoor: true, days: ['d4'], type: 'pass', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' },
-  { id: 'dinner4', name: '軽食', days: ['d4'], type: 'meal', after: '17:00', by: '20:30', dur: 15, pri: 3, area: null },
-  { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', days: ['d4'], type: 'event', after: '18:00', dur: 30, pri: 2, area: null },
+  { id: 'zombie4', name: 'ゾンビ・デ・ダンス', chip: 'ゾンビ', show: true, days: ['d4'], type: 'fixed', time: '20:50', until: '20:50', dur: 15, area: null }, // 公式アプリ：19:20・19:50・20:20・20:50。ジュラ闇・コナンのあとの20:50
   { id: 'jpdark',  name: 'ジュラシック・パーク イン・ザ・ダーク', short: 'ジュラシック（ダーク）', chip: 'ジュラシック', days: ['d4'], type: 'fixed', time: '18:50', until: '19:20', dur: 30, qt: 15322, area: 'ジュラシック・パーク' },
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 20, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
-  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 1, qt: 13005, area: 'ハリウッド' },
+  { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '09:00', dur: 30, est: 30, pri: 3, qt: 13005, area: 'ハリウッド' },
   { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 20, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
@@ -254,7 +253,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-04d';
+const APP_VERSION = '2026-11-04e';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
