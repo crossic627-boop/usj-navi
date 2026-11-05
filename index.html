@@ -249,9 +249,9 @@ const ITEMS = [
   // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
   { id: 'fd2',     name: 'ザ・フライング・ダイナソー（2回目・パス）', short: 'フライング（2回目・パス）', chip: 'フライング（パス）', outdoor: true, follows: 'fd', days: ['d5'], type: 'pass', after: '16:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' }, // 午後の混む時間にパスで。雨が来る18時より前
   { id: 'hdr2',    name: 'ハリウッド・ドリーム・ザ・ライド（シングルライダー）', short: 'ハリドリ（シングル）', chip: 'ハリドリ（シングル）', outdoor: true, days: ['d5'], type: 'standby', dur: 10, est: 25, pri: 2, area: 'ハリウッド' }, // シングルライダーの列。2人は別々の席。待ちは目安
-  { id: 'bd2',     name: 'バックドロップ（シングルライダー）', short: 'バックドロップ（シングル）', chip: 'バックドロップ（シングル）', outdoor: true, days: ['d5'], type: 'standby', dur: 10, est: 25, pri: 2, area: 'ハリウッド' }, // シングルライダーの列。待ちは目安
+  { id: 'bd2',     name: 'バックドロップ（シングルライダー）', short: 'バックドロップ（シングル）', chip: 'バックドロップ（シングル）', outdoor: true, before: '17:00', days: ['d5'], type: 'standby', dur: 10, est: 25, pri: 2, area: 'ハリウッド' }, // シングルライダーの列。待ちは目安
   { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', dur: 30, est: 40, pri: 1, area: 'ミニオン・パーク' },
-  { id: 'hp2',     name: 'ハリー・ポッター（2回目・パス）', short: 'ハリポタ（2回目・パス）', chip: 'ハリポタ（パス）', indoor: true, follows: 'hp', days: ['d5'], type: 'pass', after: '14:00', dur: 25, est: 20, pri: 3, qt: 12065, area: 'ハリー・ポッター' }, // 午後の混む時間にパスで
+  { id: 'hp2',     name: 'ハリー・ポッター（2回目・パス）', short: 'ハリポタ（2回目・パス）', chip: 'ハリポタ（パス）', indoor: true, follows: 'hp', days: ['d5'], type: 'pass', after: '19:30', dur: 25, est: 20, pri: 3, qt: 12065, area: 'ハリー・ポッター' }, // 夜（雨でも屋内）にパスで
   { id: 'minion2', name: 'ミニオン・ライド（2回目）', chip: 'ミニオン2回目', indoor: true, opt: true, follows: 'minion', days: ['d5'], type: 'standby', after: '19:00', dur: 10, est: 35, pri: 1, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'factory', name: 'ファクトリー', days: ['d4'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
@@ -259,7 +259,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05j';
+const APP_VERSION = '2026-11-05k';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
