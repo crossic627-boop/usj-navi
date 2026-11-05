@@ -252,7 +252,7 @@ const ITEMS = [
   // 昨日乗ったものの2回目（時間が空いたら）
   { id: 'conan2',  name: '名探偵コナン 4-D（2回目）', chip: 'コナン2回目', seat: true, indoor: true, opt: true, follows: 'conan', days: ['d5'], type: 'standby', after: '12:00', dur: 30, est: 30, pri: 2, qt: 13005, area: 'ハリウッド' },
   { id: 'factory2', name: 'ファクトリー（2回目）', chip: 'ファクトリー2回目', indoor: true, opt: true, follows: 'factory', days: ['d5'], type: 'standby', after: '12:00', dur: 20, est: 30, pri: 2, qt: 17893, area: 'ハリウッド' },
-  { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', after: '18:30', dur: 10, est: 15, pri: 2, qt: 14918, area: 'ミニオン・パーク' }, // ヴィランコン・ミニオン・ブラストと同じ（待ち5〜20分）
+  { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, days: ['d5'], type: 'standby', after: '16:30', dur: 10, est: 15, pri: 3, qt: 14918, area: 'ミニオン・パーク' }, // ヴィランコン・ミニオン・ブラストと同じ（待ち5〜20分）
   { id: 'minion2', name: 'ミニオン・ライド（2回目）', chip: 'ミニオン2回目', indoor: true, opt: true, follows: 'minion', days: ['d5'], type: 'standby', after: '19:00', dur: 10, est: 35, pri: 1, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'factory', name: 'ファクトリー', days: ['d4'], type: 'standby', after: '10:00', dur: 20, est: 40, pri: 1, qt: 17893, area: 'ハリウッド' },
 ];
@@ -260,7 +260,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05w';
+const APP_VERSION = '2026-11-05x';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
