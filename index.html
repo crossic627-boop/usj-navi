@@ -237,7 +237,7 @@ const ITEMS = [
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
   { id: 'mk',      name: 'マリオカート（ニンテンドー入場）', short: 'マリオカート', days: ['d5'], type: 'fixed', time: '15:30', until: '16:00', dur: 30, qt: 12061, area: 'ニンテンドー' },
   { id: 'dk',      name: 'ドンキーコングのクレイジー・トロッコ', short: 'ドンキーコング', chip: 'ドンキー', days: ['d5'], type: 'fixed', time: '16:00', until: '16:30', dur: 20, qt: 14402, area: 'ニンテンドー' },
-  { id: 'dinner5', name: '夜の軽食', days: ['d5'], type: 'meal', after: '17:00', by: '21:30', dur: 15, pri: 3, area: null },
+  { id: 'dinner5', name: '夜の軽食', days: ['d5'], type: 'meal', after: '18:30', by: '21:30', dur: 15, pri: 3, area: null },
   { id: 'mi',      name: 'ミニオン・ハチャメチャ・ミッション', short: 'ミニオン・ミッション', chip: 'ミニオン・ミッション', days: ['d5'], type: 'fixed', time: '18:00', until: '18:30', dur: 30, area: 'ミニオン・パーク' },
   { id: 'zombie5', name: 'プレイバック・ゾンビ・デ・ダンス ～ハロウィーン・ホラー・ナイト15周年～', short: 'プレイバック・ゾンビ・デ・ダンス', chip: 'プレイバック・ゾンビ', show: true, days: ['d5'], type: 'fixed', time: '21:50', until: '21:50', dur: 20, area: null },
   { id: 'csm',     name: 'チェンソーマン 4-D', chip: 'チェンソーマン', seat: true, indoor: true, days: ['d4'], type: 'standby', after: '09:00', dur: 25, est: 40, pri: 2, qt: 13925, area: 'ハリウッド' },
@@ -248,7 +248,8 @@ const ITEMS = [
   { id: 'jaws',    name: 'ジョーズ', now: 'd5', outdoor: true, days: ['d5'], type: 'standby', before: '16:30', dur: 15, est: 45, pri: 2, qt: 12068, area: 'アミティ' }, // いま並んでいる
   // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
   { id: 'fd2',     name: 'ザ・フライング・ダイナソー（2回目・パス）', short: 'フライング（2回目・パス）', chip: 'フライング（パス）', outdoor: true, follows: 'fd', days: ['d5'], type: 'pass', after: '16:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' }, // 午後の混む時間にパスで。雨が来る18時より前
-  { id: 'hdrx',    name: 'ハリウッド・ドリーム・ザ・ライド（三井住友のエクスプレス・パス）', short: 'ハリドリ（パス）', chip: 'ハリドリ（パス）', outdoor: true, days: ['d5'], type: 'pass', dur: 10, est: 15, pri: 3, qt: 7077, area: 'ハリウッド' }, // 抽選で当たったパス。取れたら入れる
+  { id: 'sadako2', name: '貞子の呪い（2回目）', chip: '貞子（2回目）', indoor: true, now: 'd5', follows: 'sadako', days: ['d5'], type: 'standby', dur: 15, est: 55, pri: 3, qt: 12324, area: 'ハリウッド' }, // いま並んでいる
+  { id: 'hdrx',    name: 'ハリウッド・ドリーム・ザ・ライド（三井住友のエクスプレス・パス）', short: 'ハリドリ（パス）', chip: 'ハリドリ（パス）', outdoor: true, days: ['d5'], type: 'pass', before: '17:45', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' }, // 抽選で当たったパス。取れたら入れる
   { id: 'villain', name: 'ヴィランコン・ミニオン・ブラスト', short: 'ヴィランコン', chip: 'ヴィランコン', indoor: true, days: ['d5'], type: 'standby', dur: 15, est: 15, pri: 3, qt: 14918, area: 'ミニオン・パーク' }, // 待ち5〜15分（ミニオン・パーク）
   // 昨日乗ったものの2回目（時間が空いたら）
   { id: 'conan2',  name: '名探偵コナン 4-D（2回目）', chip: 'コナン2回目', seat: true, indoor: true, opt: true, follows: 'conan', days: ['d5'], type: 'standby', after: '12:00', dur: 30, est: 30, pri: 2, qt: 13005, area: 'ハリウッド' },
@@ -262,7 +263,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05p';
+const APP_VERSION = '2026-11-05q';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
