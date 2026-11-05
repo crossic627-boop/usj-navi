@@ -231,7 +231,7 @@ const ITEMS = [
   { id: 'backdrop', name: 'ハリドリ ～バックドロップ～', chip: 'バックドロップ', outdoor: true, first: 'd5', firstWait: 70, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 90, pri: 3, qt: 12070, area: 'ハリウッド' },
   { id: 'minion',  name: 'ミニオン・ハチャメチャ・ライド', chip: 'ミニオン・ライド', pref: 'd5', indoor: true, days: ['d4', 'd5'], type: 'standby', dur: 10, est: 60, pri: 3, qt: 12066, area: 'ミニオン・パーク' },
   { id: 'conan',   name: '名探偵コナン 4-D', chip: 'コナン', show: true, seat: true, indoor: true, days: ['d4'], type: 'fixed', time: '18:10', until: '18:15', dur: 30, area: 'ハリウッド' }, // 11/4 18:10の回に入る
-  { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '19:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
+  { id: 'hp',      name: 'ハリー・ポッター', indoor: true, days: ['d5'], type: 'pass', after: '16:30', dur: 25, est: 15, pri: 3, qt: 12065, area: 'ハリー・ポッター' },
   { id: 'lunch',   name: '昼の軽食', days: ['d5'], type: 'meal', after: '11:00', by: '14:00', dur: 15, pri: 3, area: null },
   { id: 'fd',      name: 'ザ・フライング・ダイナソー', short: 'フライング・ダイナソー', chip: 'フライング', outdoor: true, days: ['d5'], type: 'pass', after: '10:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' },
   { id: 'sing',    name: 'SING ON TOUR', chip: 'SING', seat: true, indoor: true, days: ['d4', 'd5'], type: 'standby', after: '10:30', dur: 30, est: 20, pri: 2, qt: 7214, area: 'ハリウッド' },
@@ -248,7 +248,7 @@ const ITEMS = [
   // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
   { id: 'fd2',     name: 'ザ・フライング・ダイナソー（2回目・パス）', short: 'フライング（2回目・パス）', chip: 'フライング（パス）', outdoor: true, follows: 'fd', days: ['d5'], type: 'pass', after: '16:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' }, // 午後の混む時間にパスで。雨が来る18時より前
   { id: 'sadako2', name: '貞子の呪い（2回目）', chip: '貞子（2回目）', indoor: true, now: 'd5', follows: 'sadako', days: ['d5'], type: 'standby', dur: 15, est: 45, pri: 3, qt: 12324, area: 'ハリウッド' }, // いま並んでいる
-  { id: 'hdrx',    name: 'ハリウッド・ドリーム・ザ・ライド（三井住友のエクスプレス・パス）', short: 'ハリドリ（パス）', chip: 'ハリドリ（パス）', outdoor: true, days: ['d5'], type: 'pass', before: '17:45', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' }, // 抽選で当たったパス。取れたら入れる
+  { id: 'hdrx',    name: 'ハリウッド・ドリーム・ザ・ライド（三井住友のエクスプレス・パス）', short: 'ハリドリ（パス）', chip: 'ハリドリ（パス）', outdoor: true, days: ['d5'], type: 'pass', after: '19:30', before: '20:30', dur: 10, est: 10, pri: 3, qt: 7077, area: 'ハリウッド' }, // 抽選で当たったパス。取れたら入れる
   // 昨日乗ったものの2回目（時間が空いたら）
   { id: 'conan2',  name: '名探偵コナン 4-D（2回目）', chip: 'コナン2回目', seat: true, indoor: true, opt: true, follows: 'conan', days: ['d5'], type: 'standby', after: '12:00', dur: 30, est: 30, pri: 2, qt: 13005, area: 'ハリウッド' },
   { id: 'factory2', name: 'ファクトリー（2回目）', chip: 'ファクトリー2回目', indoor: true, opt: true, follows: 'factory', days: ['d5'], type: 'standby', after: '12:00', dur: 20, est: 30, pri: 2, qt: 17893, area: 'ハリウッド' },
@@ -260,7 +260,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05x';
+const APP_VERSION = '2026-11-05y';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
