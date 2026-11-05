@@ -249,10 +249,9 @@ const ITEMS = [
   // 2回目（opt：時間が空いたら）。コースターは朝のスタンバイが空くので、パスとは別にもう1回乗れる
   { id: 'fd2',     name: 'ザ・フライング・ダイナソー（2回目・パス）', short: 'フライング（2回目・パス）', chip: 'フライング（パス）', outdoor: true, follows: 'fd', days: ['d5'], type: 'pass', after: '16:30', dur: 15, est: 15, pri: 3, qt: 7092, area: 'ジュラシック・パーク' }, // 午後の混む時間にパスで。雨が来る18時より前
   { id: 'hdrx',    name: 'ハリウッド・ドリーム・ザ・ライド（三井住友のエクスプレス・パス）', short: 'ハリドリ（パス）', chip: 'ハリドリ（パス）', outdoor: true, days: ['d5'], type: 'pass', dur: 10, est: 15, pri: 3, qt: 7077, area: 'ハリウッド' }, // 抽選で当たったパス。取れたら入れる
-  { id: 'villain', name: 'ヴィランコン・ミニオン・ブラスト', short: 'ヴィランコン', chip: 'ヴィランコン', indoor: true, opt: true, days: ['d5'], type: 'standby', dur: 15, est: 15, pri: 1, qt: 14918, area: 'ミニオン・パーク' }, // 待ち5〜15分（ミニオン・パーク）
+  { id: 'villain', name: 'ヴィランコン・ミニオン・ブラスト', short: 'ヴィランコン', chip: 'ヴィランコン', indoor: true, days: ['d5'], type: 'standby', dur: 15, est: 15, pri: 3, qt: 14918, area: 'ミニオン・パーク' }, // 待ち5〜15分（ミニオン・パーク）
   // 昨日乗ったものの2回目（時間が空いたら）
   { id: 'conan2',  name: '名探偵コナン 4-D（2回目）', chip: 'コナン2回目', seat: true, indoor: true, opt: true, follows: 'conan', days: ['d5'], type: 'standby', after: '12:00', dur: 30, est: 30, pri: 2, qt: 13005, area: 'ハリウッド' },
-  { id: 'csm2',    name: 'チェンソーマン 4-D（2回目）', chip: 'チェンソーマン2回目', seat: true, indoor: true, opt: true, follows: 'csm', days: ['d5'], type: 'standby', after: '12:00', dur: 25, est: 25, pri: 2, qt: 13925, area: 'ハリウッド' },
   { id: 'factory2', name: 'ファクトリー（2回目）', chip: 'ファクトリー2回目', indoor: true, opt: true, follows: 'factory', days: ['d5'], type: 'standby', after: '12:00', dur: 20, est: 30, pri: 2, qt: 17893, area: 'ハリウッド' },
   { id: 'mi2',     name: 'ミニオン・ハチャメチャ・ミッション（2回目・スタンバイ）', short: 'ミッション（2回目）', chip: 'ミッション2回目', opt: true, follows: 'mi', days: ['d5'], type: 'standby', dur: 30, est: 40, pri: 1, area: 'ミニオン・パーク' },
   { id: 'hp2',     name: 'ハリー・ポッター（2回目・パス）', short: 'ハリポタ（2回目・パス）', chip: 'ハリポタ（パス）', indoor: true, follows: 'hp', days: ['d5'], type: 'pass', after: '19:30', dur: 25, est: 20, pri: 3, qt: 12065, area: 'ハリー・ポッター' }, // 夜（雨でも屋内）にパスで
@@ -263,7 +262,7 @@ const TYPE_LABEL = { fixed: '時間指定', pass: 'パス', standby: 'スタン�
 const PRI_LABEL = { 3: '高', 2: '中', 1: '低' };
 const QT_URL = 'https://queue-times.com/parks/284/queue_times.json';
 // アプリを直したらこの番号を変える（開いているスマホが自動で新しい版に切り替わる）
-const APP_VERSION = '2026-11-05o';
+const APP_VERSION = '2026-11-05p';
 
 /* ============ 保存（localStorage は必ず try/catch） ============ */
 const K = { settings: 'usjnavi.settings', state: 'usjnavi.state', trial: 'usjnavi.trialState', data: 'usjnavi.lastData', fired: 'usjnavi.fired', notify: 'usjnavi.notify' };
